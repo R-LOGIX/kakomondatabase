@@ -270,11 +270,7 @@
         .blank-wrap {
             position: relative; display: inline-block; margin: 0 4px; vertical-align: bottom;
         }
-        .blank-num-hint {
-            position: absolute; top: -1.3em; left: 50%; transform: translateX(-50%);
-            font-size: 0.65rem; color: var(--neon-purple);
-            font-weight: bold; pointer-events: none; white-space: nowrap; line-height: 1;
-        }
+        .blank-input::placeholder { color: var(--text-muted); opacity: 0.6; }
         .blank-input {
             background: #f8fafc; border: 2px solid var(--border-base);
             border-radius: 8px; padding: 4px 12px; font-size: 1.1rem; color: var(--neon-blue); font-weight: bold;
@@ -306,16 +302,20 @@
         .drop-zone-wrap {
             position: relative; display: inline-block; margin: 0 6px; vertical-align: bottom;
         }
-        .drop-zone-num-hint {
-            position: absolute; top: -1.3em; left: 50%; transform: translateX(-50%);
-            font-size: 0.65rem; color: var(--neon-purple);
-            font-weight: bold; pointer-events: none; white-space: nowrap; line-height: 1;
-        }
         .drop-zone {
             display: inline-flex; align-items: center; justify-content: center;
             min-width: 120px; height: 44px; border: 2px dashed var(--border-hover);
             border-radius: 10px; background: #f8fafc; transition: all 0.2s;
             margin: 0; padding: 0 10px; vertical-align: middle;
+            position: relative;
+        }
+        .drop-zone:empty::before {
+            content: attr(data-id);
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: bold;
+            opacity: 0.6;
+            pointer-events: none;
         }
         .drop-zone.drag-over { border-color: var(--neon-blue); background: rgba(79,70,229,0.1); }
         
@@ -951,7 +951,6 @@
         } else if (q.type === 'fill') {
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
                 `<span class="blank-wrap">` +
-                    `<span class="blank-num-hint">${p1}</span>` +
                     `<input type="text" class="blank-input" data-id="${p1}" placeholder="${p1}" autocomplete="off">` +
                 `</span>`
             );
@@ -965,7 +964,6 @@
             wArea.style.display = 'block';
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
                 `<span class="drop-zone-wrap">` +
-                    `<span class="drop-zone-num-hint">${p1}</span>` +
                     `<span class="drop-zone" data-id="${p1}" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)"></span>` +
                 `</span>`
             );
@@ -1318,9 +1316,9 @@
             let allCorrect = true;
             document.querySelectorAll('.blank-input').forEach(input => {
                 const id = input.dataset.id;
-                const val = input.value.trim();
-                const correctAnswer = q.answers[id];
-                if (val === correctAnswer) {
+                const val = (input.value || "").trim();
+                const correctAnswer = q.answers[id] != null ? String(q.answers[id]).trim() : "";
+                if (val === correctAnswer && val !== "") {
                     input.classList.add('correct');
                 } else {
                     input.classList.add('incorrect');
@@ -1341,9 +1339,10 @@
             let allCorrect = true;
             document.querySelectorAll('.drop-zone').forEach(zone => {
                 const id = zone.dataset.id;
-                const correctAnswer = q.answers[id];
-                const val = zone.textContent.trim();
-                if (val === correctAnswer) {
+                const item = zone.querySelector('.draggable-item');
+                const val = item ? (item.textContent || "").trim() : "";
+                const correctAnswer = q.answers[id] != null ? String(q.answers[id]).trim() : "";
+                if (val === correctAnswer && val !== "") {
                     zone.classList.add('correct');
                 } else {
                     zone.classList.add('incorrect');
@@ -1356,7 +1355,6 @@
                         zone.parentNode.insertBefore(label, zone.nextSibling);
                     }
                 }
-                const item = zone.querySelector('.draggable-item');
                 if (item) item.draggable = false;
             });
             isCorrectGlobal = allCorrect;
