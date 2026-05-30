@@ -166,20 +166,6 @@
         .problem-item.selected:hover {
             border-color: var(--neon-blue);
         }
-        /* 正誤マーク */
-        .problem-item .result-mark {
-            position: absolute; top: -8px; right: -8px;
-            width: 22px; height: 22px; border-radius: 50%;
-            font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; justify-content: center;
-            border: 2px solid white; box-shadow: var(--shadow-sm);
-        }
-        .result-mark.mark-correct   { background: var(--neon-green); color: white; }
-        .result-mark.mark-partial   { background: var(--neon-yellow); color: white; }
-        .result-mark.mark-incorrect { background: var(--neon-red);   color: white; }
-        .problem-item.answered-correct   { border-color: rgba(16,185,129,0.5); }
-        .problem-item.answered-partial   { border-color: rgba(245,158,11,0.5); }
-        .problem-item.answered-incorrect { border-color: rgba(239,68,68,0.5); }
-
         /* 選択済みスタート */
         .start-selected-bar {
             margin-top: 20px; padding: 16px 20px;
@@ -704,22 +690,15 @@
 
         filteredIndices.forEach((idx) => {
             const q = allQuestions[idx];
-            const res = results[idx];
-            const mark = res ? res.mark : null;
 
             const btn = document.createElement('div');
             btn.className = 'problem-item';
             btn.id = `pitem-${idx}`;
-            if (mark) btn.classList.add(`answered-${mark}`);
             if (selectedQuestionSet.has(idx)) btn.classList.add('selected');
 
             const titleText = q.title || `問 ${idx + 1}`;
             let innerHtml = `<span>${titleText}</span>`;
             
-            if (mark) {
-                const icon = mark === 'correct' ? '○' : mark === 'partial' ? '△' : '✗';
-                innerHtml += `<span class="result-mark mark-${mark}">${icon}</span>`;
-            }
             btn.innerHTML = innerHtml;
 
             btn.onclick = (e) => {
