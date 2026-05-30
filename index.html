@@ -283,9 +283,6 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             border: 2px solid var(--neon-blue);
             margin-bottom: 24px;
-            max-height: 35vh;
-            display: flex;
-            flex-direction: column;
         }
         .word-bank {
             display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 25px;
@@ -297,6 +294,7 @@
             margin-bottom: 0;
             padding: 10px;
             min-height: auto;
+            max-height: 35vh;
             border: none;
             background: transparent;
             overflow-y: auto;
@@ -306,7 +304,7 @@
         .draggable-item {
             background: white;
             color: var(--text-main); font-weight: bold; padding: 10px 20px; border-radius: 12px;
-            cursor: grab; user-select: none; font-size: 1.05rem; 
+            cursor: grab; user-select: none; font-size: clamp(0.85rem, 3vw, 1.05rem); 
             border: 2px solid var(--text-main);
             box-shadow: 4px 4px 0px 0px rgb(15 23 42); transition: transform 0.1s;
             touch-action: none;
