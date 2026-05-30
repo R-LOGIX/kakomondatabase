@@ -1189,15 +1189,15 @@
 
         if (q.type === 'single') {
             if (userSelectionSingle === null) isCorrectGlobal = false;
-            else isCorrectGlobal = (userSelectionSingle === q.answer);
+            else isCorrectGlobal = (String(userSelectionSingle) === String(q.answer));
 
             document.querySelectorAll('.option-btn').forEach(btn => {
-                const optId = btn.dataset.optId;
-                if (optId === q.answer) {
+                const optId = String(btn.dataset.optId);
+                if (optId === String(q.answer)) {
                     btn.style.borderColor = 'var(--neon-green)';
                     btn.style.background = 'rgba(16, 185, 129, 0.2)';
                     btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓ 正解</span>';
-                } else if (optId === userSelectionSingle && !isCorrectGlobal) {
+                } else if (userSelectionSingle !== null && optId === String(userSelectionSingle) && !isCorrectGlobal) {
                     btn.style.borderColor = 'var(--neon-red)';
                     btn.style.background = 'rgba(239, 68, 68, 0.2)';
                 }
@@ -1206,15 +1206,24 @@
             if (!userSelectionMulti.length) {
                 isCorrectGlobal = false;
             } else {
-                isCorrectGlobal = q.answer.every(a => userSelectionMulti.includes(a)) && q.answer.length === userSelectionMulti.length;
+                const uSet = new Set(userSelectionMulti.map(String));
+                const aSet = new Set(q.answer.map(String));
+                isCorrectGlobal = true;
+                if (uSet.size !== aSet.size) isCorrectGlobal = false;
+                else {
+                    for (let a of aSet) if (!uSet.has(a)) isCorrectGlobal = false;
+                }
             }
             document.querySelectorAll('.option-btn').forEach(btn => {
-                const optId = btn.dataset.optId;
-                if (q.answer.includes(optId)) {
+                const optId = String(btn.dataset.optId);
+                const aSet = q.answer.map(String);
+                const uSet = userSelectionMulti.map(String);
+                
+                if (aSet.includes(optId)) {
                     btn.style.borderColor = 'var(--neon-green)';
                     btn.style.background = 'rgba(16, 185, 129, 0.2)';
                     btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓</span>';
-                } else if (userSelectionMulti.includes(optId)) {
+                } else if (uSet.includes(optId)) {
                     btn.style.borderColor = 'var(--neon-red)';
                     btn.style.background = 'rgba(239, 68, 68, 0.2)';
                 }
@@ -1222,11 +1231,11 @@
         } else if (q.type === 'sequence') {
             let allCorrect = true;
             document.querySelectorAll('.seq-row').forEach((row, idx) => {
-                const correctAns = q.parts[idx].answer;
-                const userAns = userSelectionSequence[idx];
+                const correctAns = String(q.parts[idx].answer);
+                const userAns = userSelectionSequence[idx] !== undefined ? String(userSelectionSequence[idx]) : undefined;
                 if (userAns === undefined || userAns !== correctAns) allCorrect = false;
                 row.querySelectorAll('.option-btn').forEach(btn => {
-                    const optId = btn.dataset.optId;
+                    const optId = String(btn.dataset.optId);
                     if (optId === correctAns) {
                         btn.style.borderColor = 'var(--neon-green)';
                         btn.style.background = 'rgba(16, 185, 129, 0.2)';
