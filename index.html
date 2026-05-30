@@ -166,6 +166,16 @@
         .problem-item.selected:hover {
             border-color: var(--neon-blue);
         }
+        /* 設問形式バッジ */
+        .problem-type-badge {
+            font-size: 0.7rem;
+            color: var(--neon-blue);
+            background: rgba(79, 70, 229, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 6px;
+            font-weight: bold;
+        }
         /* 選択済みスタート */
         .start-selected-bar {
             margin-top: 20px; padding: 16px 20px;
@@ -262,11 +272,30 @@
         .correct-answer-label { color: var(--neon-green); font-size: 0.95rem; font-weight: bold; margin-left: 8px; }
 
         /* ===== ドラッグ＆ドロップ空欄補充 ===== */
+        .sticky-word-bank {
+            position: sticky;
+            top: 15px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--neon-blue);
+            margin-bottom: 24px;
+        }
         .word-bank {
             display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 25px;
             padding: 24px; background: #f8fafc; border-radius: 16px;
             border: 2px dashed var(--border-base); min-height: 80px;
             align-items: center; justify-content: center;
+        }
+        .sticky-word-bank .word-bank {
+            margin-bottom: 0;
+            padding: 10px;
+            min-height: auto;
+            border: none;
+            background: transparent;
         }
         .draggable-item {
             background: white;
@@ -471,8 +500,8 @@
                 </div>
 
                 <!-- ドラッグ語群 -->
-                <div id="word-bank-area" style="display: none;">
-                    <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">語群 (ドラッグして空欄に配置してください)</div>
+                <div id="word-bank-area" class="sticky-word-bank" style="display: none;">
+                    <div style="font-size: 0.95rem; color: var(--neon-blue); font-weight: bold; margin-bottom: 8px; text-align: center;">語群 (ドラッグして空欄に配置してください)</div>
                     <div id="word-bank" class="word-bank" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)"></div>
                 </div>
 
@@ -675,7 +704,15 @@
             if (selectedQuestionSet.has(idx)) btn.classList.add('selected');
 
             const titleText = q.title || `問 ${idx + 1}`;
-            let innerHtml = `<span>${titleText}</span>`;
+            let typeText = 'その他';
+            if (q.type === 'single') typeText = '単一選択';
+            else if (q.type === 'multi') typeText = '複数選択';
+            else if (q.type === 'sequence') typeText = '並べ替え';
+            else if (q.type === 'fill') typeText = '空欄補充';
+            else if (q.type === 'drag-fill') typeText = 'ドラッグ';
+            else if (q.type === 'essay') typeText = '論述';
+            
+            let innerHtml = `<span>${titleText}</span><div class="problem-type-badge">${typeText}</div>`;
             
             btn.innerHTML = innerHtml;
 
