@@ -1058,6 +1058,45 @@
         }
     }
 
+    let autoScrollTimer = null;
+    let dragScrollY = 0;
+
+    function startAutoScroll() {
+        if (!autoScrollTimer) {
+            autoScrollTimer = setInterval(() => {
+                if (dragScrollY !== 0) {
+                    window.scrollBy(0, dragScrollY);
+                }
+            }, 20);
+        }
+    }
+
+    function stopAutoScroll() {
+        if (autoScrollTimer) {
+            clearInterval(autoScrollTimer);
+            autoScrollTimer = null;
+        }
+        dragScrollY = 0;
+    }
+
+    document.addEventListener('dragover', (ev) => {
+        if (isAnswerRevealed) return;
+        const edgeThreshold = 80;
+        if (ev.clientY < edgeThreshold) {
+            dragScrollY = -15;
+            startAutoScroll();
+        } else if (ev.clientY > window.innerHeight - edgeThreshold) {
+            dragScrollY = 15;
+            startAutoScroll();
+        } else {
+            dragScrollY = 0;
+            stopAutoScroll();
+        }
+    });
+
+    document.addEventListener('drop', () => { stopAutoScroll(); });
+    document.addEventListener('dragend', () => { stopAutoScroll(); });
+
     function allowDrop(ev) {
         ev.preventDefault();
         const t = getDropZoneTarget(ev.target);
@@ -1068,8 +1107,9 @@
         if (t) t.classList.remove('drag-over');
     }
     function getDropZoneTarget(el) {
+        if (!el || !el.classList) return null;
         if (el.classList.contains('drop-zone')) return el;
-        if (el.parentNode && el.parentNode.classList.contains('drop-zone')) return el.parentNode;
+        if (el.parentNode && el.parentNode.classList && el.parentNode.classList.contains('drop-zone')) return el.parentNode;
         return null;
     }
     function drag(ev) {
@@ -1142,6 +1182,7 @@
         touchOffsetX = touch.clientX - rect.left;
         touchOffsetY = touch.clientY - rect.top;
         playSound('click');
+        startAutoScroll();
     }
     function handleTouchMove(e) {
         if (!dragGhost) return;
@@ -1151,19 +1192,37 @@
         dragGhost.style.top  = (touch.clientY - touchOffsetY)  + 'px';
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
         document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
-        if (target && target.classList.contains('drop-zone')) target.classList.add('drag-over');
+        if (target) {
+            let dropTarget = getDropZoneTarget(target);
+            if (dropTarget) dropTarget.classList.add('drag-over');
+        }
+
+        const edgeThreshold = 80;
+        if (touch.clientY < edgeThreshold) {
+            dragScrollY = -15;
+            startAutoScroll();
+        } else if (touch.clientY > window.innerHeight - edgeThreshold) {
+            dragScrollY = 15;
+            startAutoScroll();
+        } else {
+            dragScrollY = 0;
+            stopAutoScroll();
+        }
     }
     function handleTouchEnd(e) {
         if (!dragGhost || !activeDragEl) return;
+        stopAutoScroll();
         const touch = e.changedTouches[0];
         dragGhost.remove(); dragGhost = null;
         activeDragEl.style.opacity = '1';
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
         document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
         if (target) {
-            let dropTarget = target;
-            if (dropTarget.classList.contains('draggable-item')) dropTarget = dropTarget.parentNode;
-            if (dropTarget.classList.contains('drop-zone')) {
+            let dropTarget = getDropZoneTarget(target);
+            if (!dropTarget) dropTarget = target;
+            if (dropTarget.classList && dropTarget.classList.contains('draggable-item')) dropTarget = dropTarget.parentNode;
+            
+            if (dropTarget.classList && dropTarget.classList.contains('drop-zone')) {
                 if (dropTarget.hasChildNodes()) {
                     Array.from(dropTarget.children).forEach(child => {
                         if(child.id) document.getElementById('word-bank').appendChild(child);
@@ -1173,7 +1232,7 @@
                 dropTarget.appendChild(activeDragEl);
                 playSound('drop');
                 syncSameIdDropZoneAfterDrop(dropTarget);
-            } else if (dropTarget.id === 'word-bank' || dropTarget.closest('.word-bank') || dropTarget.closest('#word-bank-area')) {
+            } else if (dropTarget.id === 'word-bank' || (dropTarget.closest && dropTarget.closest('.word-bank')) || (dropTarget.closest && dropTarget.closest('#word-bank-area'))) {
                 document.getElementById('word-bank').appendChild(activeDragEl);
                 playSound('drop');
             }
