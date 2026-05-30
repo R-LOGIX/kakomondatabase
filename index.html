@@ -207,7 +207,8 @@
         .quiz-progress-text { color: var(--text-muted); font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
 
         .question-number-label {
-            display: inline-block;
+            display: block;
+            width: fit-content;
             background: rgba(79,70,229,0.1);
             border: none;
             border-radius: 8px;
@@ -711,7 +712,7 @@
             let typeText = 'その他';
             if (q.type === 'single') typeText = '記号選択';
             else if (q.type === 'multi') typeText = '記号選択';
-            else if (q.type === 'sequence') typeText = '正誤選択';
+            else if (q.type === 'sequence') typeText = '記号選択';
             else if (q.type === 'fill') typeText = '短答';
             else if (q.type === 'drag-fill') typeText = '語群選択';
             else if (q.type === 'essay') typeText = '論述';
@@ -838,9 +839,7 @@
             qArea.innerHTML = labelHtml + formattedText;
             qArea.querySelectorAll('.blank-input').forEach(inp => {
                 inp.addEventListener('input', () => syncSameIdInputs(inp.dataset.id, inp.value));
-                inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !isAnswerRevealed) handleAction(); });
             });
-            kbHint.innerHTML = '<kbd>Enter</kbd> で解答';
         } else if (q.type === 'drag-fill') {
             wArea.style.display = 'block';
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
@@ -868,7 +867,6 @@
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>') +
                 `<textarea class="essay-textarea" placeholder="ここに解答を記述してください..."></textarea>`;
             actionBtn.innerText = '解答例を確認する';
-            kbHint.innerHTML = '<kbd>Enter</kbd> で解答確認 （Shift+Enterで改行）';
         }
 
         if (q.type === 'single') {
@@ -887,7 +885,7 @@
                 };
                 oArea.appendChild(btn);
             });
-            kbHint.innerHTML = '数字キー <kbd>1</kbd>〜<kbd>' + opts.length + '</kbd> で選択　<kbd>Enter</kbd> で解答';
+            kbHint.innerHTML = '数字キー <kbd>1</kbd>〜<kbd>' + opts.length + '</kbd> で選択';
         } else if (q.type === 'multi') {
             const opts = quizSettings.randomOptions ? shuffleArray(q.options) : q.options;
             opts.forEach((opt, i) => {
@@ -908,7 +906,7 @@
                 };
                 oArea.appendChild(btn);
             });
-            kbHint.innerHTML = '数字キー <kbd>1</kbd>〜<kbd>' + opts.length + '</kbd> でトグル選択　<kbd>Enter</kbd> で解答';
+            kbHint.innerHTML = '数字キー <kbd>1</kbd>〜<kbd>' + opts.length + '</kbd> でトグル選択';
         } else if (q.type === 'sequence') {
             q.parts.forEach((part, pIdx) => {
                 const row = document.createElement('div');
@@ -935,7 +933,6 @@
                 row.appendChild(grp);
                 oArea.appendChild(row);
             });
-            kbHint.innerHTML = '<kbd>Enter</kbd> で解答';
         }
     }
 
@@ -1126,12 +1123,6 @@
         const actionBtn = document.getElementById('action-btn');
         const q = currentSession && playQueue.length ? currentSession.questions[playQueue[playQueuePos]] : null;
         if (!q) return;
-
-        if (e.key === 'Enter') {
-            if (q.type === 'essay' && e.shiftKey) return;
-            if (actionBtn.style.display !== 'none') { e.preventDefault(); handleAction(); }
-            return;
-        }
 
         if (isAnswerRevealed) return;
         const num = parseInt(e.key);
