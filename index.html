@@ -168,11 +168,14 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .problem-item:hover {
-            background: #f8fafc; border-color: var(--neon-blue); transform: translateY(-2px);
+            background: #f8fafc; border-color: var(--border-hover); transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
         .problem-item.selected {
             background: rgba(79,70,229,0.05); border-color: var(--neon-blue);
+        }
+        .problem-item.selected:hover {
+            border-color: var(--neon-blue);
         }
         /* 正誤マーク */
         .problem-item .result-mark {
@@ -256,8 +259,9 @@
             font-size: 1.05rem; text-align: left; cursor: pointer; transition: all 0.2s;
             display: flex; align-items: center; gap: 12px; font-weight: bold;
         }
-        .option-btn:hover { background: #f8fafc; border-color: var(--neon-blue); }
+        .option-btn:hover { background: #f8fafc; border-color: var(--border-hover); }
         .option-btn.selected { background: rgba(79,70,229,0.05); border-color: var(--neon-blue); box-shadow: var(--shadow-sm); }
+        .option-btn.selected:hover { border-color: var(--neon-blue); }
         
         .shortcut-badge {
             min-width: 28px; height: 28px; border-radius: 8px;
@@ -462,19 +466,18 @@
                 学習を開始するセッションを選択してください。
             </div>
             <div class="menu-grid" id="menu-container"></div>
-        </section>
 
-        <!-- お問い合わせ領域 -->
+            <!-- お問い合わせ領域 -->
             <div style="margin-top: 40px; padding: 24px; text-align: center; background: white; border: 2px solid var(--border-base); border-radius: 16px; box-shadow: var(--shadow-sm);">
                 <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 8px;">お問い合わせ</h3>
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">
                     問題提供などあれば以下までメールお願いします。対応できるかもしれません。
                 </p>
-                <a href="mailto:sakiku2007426@gmail.com" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; background: rgba(79,70,229,0.1); color: var(--neon-blue); font-weight: bold; text-decoration: none; border-radius: 8px; transition: all 0.2s;">
-                    ✉ r.logix.lab@gmail.com
+                <a href="mailto:r.logix.lab@gmail.com" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; background: rgba(79,70,229,0.1); color: var(--neon-blue); font-weight: bold; text-decoration: none; border-radius: 8px; transition: all 0.2s;">
+                    ✉ sakiku2007426@gmail.com
                 </a>
             </div>
-
+        </section>
 
         <!-- ===== 問題選択 ===== -->
         <section id="view-problem-select" class="view-section">
@@ -561,11 +564,11 @@
                     <div style="color: var(--neon-green); font-weight: bold; margin-bottom: 10px;">■ 解答例・解説</div>
                     <div id="essay-sample-text" style="line-height: 1.8; font-size: 1.05rem; margin-bottom: 20px;"></div>
                     <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-                        <p style="color: var(--text-muted); font-size: 0.95rem;">自己採点を行ってください（スコアに加算されます）</p>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">自己採点を行ってください</p>
                         <div class="grade-btn-group">
-                            <button class="grade-btn g-correct" onclick="submitSelfGrade(1, this)">〇 正解 (1点)</button>
-                            <button class="grade-btn g-partial" onclick="submitSelfGrade(0.5, this)">△ 部分点 (0.5点)</button>
-                            <button class="grade-btn g-incorrect" onclick="submitSelfGrade(0, this)">× 不正解 (0点)</button>
+                            <button class="grade-btn g-correct" onclick="submitSelfGrade('correct', this)">〇 正解</button>
+                            <button class="grade-btn g-partial" onclick="submitSelfGrade('partial', this)">△ 部分点</button>
+                            <button class="grade-btn g-incorrect" onclick="submitSelfGrade('incorrect', this)">× 不正解</button>
                         </div>
                     </div>
                 </div>
@@ -582,14 +585,7 @@
         <section id="view-result" class="view-section">
             <div class="glass-card" style="text-align: center;">
                 <h2 style="font-size: 2rem; margin-bottom: 8px;">演習完了</h2>
-                <p style="color: var(--text-muted); margin-bottom: 0;">あなたのスコア</p>
-
-                <div class="score-circle pop-in" id="score-circle">
-                    <div class="score-num" id="final-score">0/0</div>
-                    <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">獲得スコア</div>
-                </div>
-
-                <div class="score-message" id="score-message"></div>
+                <div class="score-message" id="score-message" style="margin-top: 20px;"></div>
 
                 <div class="result-summary-bar" id="result-summary-bar"></div>
 
@@ -680,9 +676,9 @@
         try { return JSON.parse(localStorage.getItem(LS_KEY_SCORE) || '{}'); }
         catch { return {}; }
     }
-    function saveLastScore(dbIndex, score, total) {
+    function saveLastScore(dbIndex, total) {
         const data = loadLastScores();
-        data[dbIndex] = { score, total, time: Date.now() };
+        data[dbIndex] = { total, time: Date.now() };
         localStorage.setItem(LS_KEY_SCORE, JSON.stringify(data));
     }
     function loadSettings() {
@@ -743,9 +739,7 @@
             const last   = lastScores[index];
             let badgeHtml = '';
             if (last) {
-                const pct = last.total > 0 ? last.score / last.total : 0;
-                let cls = pct >= 1 ? 'perfect' : pct >= 0.7 ? 'good' : pct >= 0.4 ? 'fair' : 'poor';
-                badgeHtml = `<span class="last-score-badge ${cls}">前回 ${last.score}/${last.total}</span>`;
+                badgeHtml = `<span class="last-score-badge good">前回完了</span>`;
             }
 
             const card = document.createElement('div');
@@ -1284,18 +1278,16 @@
             if (playQueuePos < playQueue.length) renderQuestion();
             else {
                 const total = playQueue.length;
-                saveLastScore(currentDbIndex, score, total);
+                saveLastScore(currentDbIndex, total);
                 initApp();
                 showResultScreen(total);
             }
         }
     }
 
-    function submitSelfGrade(points, btn) {
+    function submitSelfGrade(mark, btn) {
         const qIdx = playQueue[playQueuePos];
-        const mark = points >= 1 ? 'correct' : points > 0 ? 'partial' : 'incorrect';
-        sessionResults[currentDbIndex][qIdx] = { mark, score: points };
-        score += points;
+        sessionResults[currentDbIndex][qIdx] = { mark, score: 0 };
         isWaitingForSelfGrade = false;
         isAnswerRevealed = true;
 
@@ -1432,8 +1424,7 @@
         }
 
         const mark = isCorrectGlobal ? 'correct' : 'incorrect';
-        sessionResults[currentDbIndex][qIdx] = { mark, score: isCorrectGlobal ? 1 : 0 };
-        if (isCorrectGlobal) score++;
+        sessionResults[currentDbIndex][qIdx] = { mark, score: 0 };
 
         playSound(isCorrectGlobal ? 'correct' : 'incorrect');
 
@@ -1451,14 +1442,10 @@
 
     function showResultScreen(total) {
         playSound('complete');
-        const pct = total > 0 ? score / total : 0;
-        document.getElementById('final-score').innerText = `${score} / ${total}`;
 
         const msgEl = document.getElementById('score-message');
-        if (pct >= 1)       { msgEl.style.color = 'var(--neon-green)';  msgEl.innerText = '🎉 パーフェクト！素晴らしい！'; }
-        else if (pct >= 0.8){ msgEl.style.color = 'var(--neon-blue)';   msgEl.innerText = '👍 よくできました！'; }
-        else if (pct >= 0.5){ msgEl.style.color = 'var(--neon-yellow)'; msgEl.innerText = '📚 もう少し！復習を続けよう。'; }
-        else                { msgEl.style.color = 'var(--neon-red)';    msgEl.innerText = '💪 復習が必要です。再挑戦しよう！'; }
+        msgEl.style.color = 'var(--neon-blue)';
+        msgEl.innerText = '🎉 演習が完了しました！よく頑張りました。';
 
         const results = sessionResults[currentDbIndex];
         let cCorrect = 0, cPartial = 0, cIncorrect = 0;
