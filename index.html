@@ -378,7 +378,7 @@
         function showProblemSelection(dbIndex) {
             initAudio();
             currentSession = questionDatabase[dbIndex];
-            score = 0; // スコアリセット
+            score = 0;
             
             document.getElementById('problem-select-title').innerText = currentSession.categoryName;
             
@@ -441,6 +441,20 @@
                 });
                 qArea.innerHTML = formattedText;
                 actionBtn.disabled = false;
+
+                // ★追加: 同一解答番号の入力内容をリアルタイムで同期する処理
+                const fillInputs = document.querySelectorAll('.blank-input');
+                fillInputs.forEach(input => {
+                    input.addEventListener('input', function() {
+                        const currentVal = this.value;
+                        const currentId = this.dataset.id;
+                        fillInputs.forEach(otherInput => {
+                            if (otherInput.dataset.id === currentId && otherInput !== this) {
+                                otherInput.value = currentVal;
+                            }
+                        });
+                    });
+                });
             }
             else if (q.type === 'drag-fill') {
                 wArea.style.display = 'block';
@@ -741,7 +755,7 @@
                     if (userAnswer !== correctAnswer) allCorrect = false;
                     
                     row.querySelectorAll('.option-btn').forEach(btn => {
-                        const optText = btn.innerText.replace(' ✓', ''); // ゴミ除去
+                        const optText = btn.innerText.replace(' ✓', '');
                         const optObj = q.parts[idx].options.find(o => o.text === optText);
                         if(optObj && optObj.id === correctAnswer) {
                             btn.style.borderColor = 'var(--neon-green)';
@@ -758,6 +772,7 @@
             }
             else if (q.type === 'fill') {
                 let allCorrect = true;
+                // 注意: 同じ解答番号が複数あっても、それぞれ独立して答えを照合しています
                 document.querySelectorAll('.blank-input').forEach(input => {
                     const id = input.dataset.id;
                     const val = input.value.trim();
