@@ -283,6 +283,9 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             border: 2px solid var(--neon-blue);
             margin-bottom: 24px;
+            max-height: 35vh;
+            display: flex;
+            flex-direction: column;
         }
         .word-bank {
             display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 25px;
@@ -296,6 +299,9 @@
             min-height: auto;
             border: none;
             background: transparent;
+            overflow-y: auto;
+            align-items: flex-start;
+            align-content: flex-start;
         }
         .draggable-item {
             background: white;
@@ -477,7 +483,7 @@
                 <div class="start-selected-bar" id="start-selected-bar">
                     <div class="sel-info">選択中: <span id="sel-count">0</span> 問</div>
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <button class="btn btn-secondary" style="padding:10px 18px; font-size:0.9rem;" onclick="startSelectedQuestions()">▶ 選択問題を解く</button>
+                        <button class="btn btn-secondary" style="padding:10px 18px; font-size:0.9rem;" onclick="startSelectedQuestions()">▶ 選択した問題を解く</button>
                     </div>
                 </div>
 
@@ -705,11 +711,11 @@
 
             const titleText = q.title || `問 ${idx + 1}`;
             let typeText = 'その他';
-            if (q.type === 'single') typeText = '単一選択';
-            else if (q.type === 'multi') typeText = '複数選択';
-            else if (q.type === 'sequence') typeText = '並べ替え';
-            else if (q.type === 'fill') typeText = '空欄補充';
-            else if (q.type === 'drag-fill') typeText = 'ドラッグ';
+            if (q.type === 'single') typeText = '記号選択';
+            else if (q.type === 'multi') typeText = '記号選択';
+            else if (q.type === 'sequence') typeText = '正誤選択';
+            else if (q.type === 'fill') typeText = '短答';
+            else if (q.type === 'drag-fill') typeText = '語群選択';
             else if (q.type === 'essay') typeText = '論述';
             
             let innerHtml = `<span>${titleText}</span><div class="problem-type-badge">${typeText}</div>`;
