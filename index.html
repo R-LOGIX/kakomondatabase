@@ -93,17 +93,6 @@
         .menu-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
         .menu-count { color: var(--neon-blue); font-size: 0.85rem; font-weight: bold; background: rgba(79,70,229,0.1); padding: 4px 10px; border-radius: 8px; }
 
-        /* 前回スコアバッジ */
-        .last-score-badge {
-            font-size: 0.8rem; font-weight: bold; padding: 4px 10px;
-            border-radius: 20px; background: rgba(0,0,0,0.05);
-            border: 1px solid var(--border-base);
-        }
-        .last-score-badge.perfect { color: var(--neon-green); border-color: var(--neon-green); background: rgba(16,185,129,0.1); }
-        .last-score-badge.good    { color: var(--neon-blue);  border-color: var(--neon-blue); background: rgba(79,70,229,0.1); }
-        .last-score-badge.fair    { color: var(--neon-yellow);border-color: var(--neon-yellow); background: rgba(245,158,11,0.1); }
-        .last-score-badge.poor    { color: var(--neon-red);   border-color: var(--neon-red); background: rgba(239,68,68,0.1); }
-
         /* ===== 問題選択 ===== */
         .problem-select-controls {
             display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;
@@ -395,50 +384,6 @@
             box-shadow: 0 2px 0 0 var(--border-base);
         }
 
-        /* ===== 結果画面 ===== */
-        .score-circle {
-            width: 160px; height: 160px; border-radius: 50%; border: 6px solid var(--neon-blue);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            margin: 30px auto; background: white; box-shadow: var(--shadow-md);
-        }
-        .score-num { font-size: 2.8rem; font-weight: 900; color: var(--text-main); }
-
-        .result-detail-wrap {
-            margin-top: 24px; max-height: 40vh; overflow-y: auto;
-            border: 2px solid var(--border-base); border-radius: 16px; background: white;
-            box-shadow: var(--shadow-sm);
-        }
-        .result-detail-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; text-align: left; }
-        .result-detail-table th {
-            position: sticky; top: 0; background: #f8fafc;
-            padding: 14px 16px; color: var(--text-muted); font-weight: bold;
-            border-bottom: 2px solid var(--border-base); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;
-        }
-        .result-detail-table td {
-            padding: 12px 16px; border-bottom: 1px solid var(--border-base);
-            vertical-align: middle; color: var(--text-main); font-weight: 500;
-        }
-        .result-detail-table tr:last-child td { border-bottom: none; }
-        .result-detail-table tr:hover td { background: #f8fafc; }
-        .result-mark-cell { text-align: center; }
-        .mark-icon { font-size: 1.2rem; font-weight: bold; }
-        .mark-icon.ci  { color: var(--neon-green); }
-        .mark-icon.cp  { color: var(--neon-yellow); }
-        .mark-icon.cx  { color: var(--neon-red); }
-
-        .result-summary-bar {
-            display: flex; gap: 30px; justify-content: center; flex-wrap: wrap;
-            margin-bottom: 24px; background: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid var(--border-base);
-        }
-        .result-stat { text-align: center; }
-        .result-stat .stat-num { font-size: 2.2rem; font-weight: 900; }
-        .result-stat .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .result-stat.s-correct  .stat-num { color: var(--neon-green); }
-        .result-stat.s-partial  .stat-num { color: var(--neon-yellow); }
-        .result-stat.s-incorrect.stat-num { color: var(--neon-red); }
-
-        .score-message { font-size: 1.3rem; font-weight: 800; margin: 10px 0 20px; }
-
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 99px; }
@@ -580,34 +525,6 @@
                 <div class="keyboard-hint" id="keyboard-hint"></div>
             </div>
         </section>
-
-        <!-- ===== 結果 ===== -->
-        <section id="view-result" class="view-section">
-            <div class="glass-card" style="text-align: center;">
-                <h2 style="font-size: 2rem; margin-bottom: 8px;">演習完了</h2>
-                <div class="score-message" id="score-message" style="margin-top: 20px;"></div>
-
-                <div class="result-summary-bar" id="result-summary-bar"></div>
-
-                <div class="result-detail-wrap">
-                    <table class="result-detail-table">
-                        <thead>
-                            <tr>
-                                <th style="width:50px">問</th>
-                                <th>タイトル</th>
-                                <th style="width:60px; text-align:center;">結果</th>
-                            </tr>
-                        </thead>
-                        <tbody id="result-detail-body"></tbody>
-                    </table>
-                </div>
-
-                <div class="controls" style="margin-top: 20px; justify-content: center;">
-                    <button class="btn btn-secondary" onclick="playSound('click'); returnToProblemSelect()">問題一覧へ戻る</button>
-                    <button class="btn btn-primary" style="max-width: 280px;" onclick="playSound('click'); retryWrongAnswers()">✗ 不正解を再挑戦</button>
-                </div>
-            </div>
-        </section>
     </main>
 
     <script>
@@ -657,7 +574,6 @@
     let currentDbIndex      = -1;
     let playQueue           = [];
     let playQueuePos        = 0;
-    let score               = 0;
     let isAnswerRevealed    = false;
     let isWaitingForSelfGrade = false;
 
@@ -667,20 +583,10 @@
 
     const sessionResults = {};
 
-    const LS_KEY_SCORE    = 'kakomon_last_scores';
     const LS_KEY_SETTINGS = 'kakomon_quiz_settings';
     let selectedQuestionSet = new Set();
     let quizSettings = { randomOrder: false, randomOptions: false, randomWords: false };
 
-    function loadLastScores() {
-        try { return JSON.parse(localStorage.getItem(LS_KEY_SCORE) || '{}'); }
-        catch { return {}; }
-    }
-    function saveLastScore(dbIndex, total) {
-        const data = loadLastScores();
-        data[dbIndex] = { total, time: Date.now() };
-        localStorage.setItem(LS_KEY_SCORE, JSON.stringify(data));
-    }
     function loadSettings() {
         try {
             const s = JSON.parse(localStorage.getItem(LS_KEY_SETTINGS) || '{}');
@@ -732,15 +638,9 @@
         syncSettingUI();
         const container  = document.getElementById('menu-container');
         container.innerHTML = '';
-        const lastScores = loadLastScores();
 
         questionDatabase.forEach((qSet, index) => {
             const qCount = (qSet.questions && Array.isArray(qSet.questions)) ? qSet.questions.length : 0;
-            const last   = lastScores[index];
-            let badgeHtml = '';
-            if (last) {
-                badgeHtml = `<span class="last-score-badge good">前回完了</span>`;
-            }
 
             const card = document.createElement('div');
             card.className = 'glass-card menu-item';
@@ -749,7 +649,6 @@
                 <div class="menu-desc">${qSet.description}</div>
                 <div class="menu-meta">
                     <span class="menu-count">全 ${qCount} 問</span>
-                    ${badgeHtml}
                 </div>
             `;
             card.onclick = () => { playSound('click'); showProblemSelection(index); };
@@ -761,7 +660,6 @@
         initAudio();
         currentDbIndex = dbIndex;
         currentSession = questionDatabase[dbIndex];
-        score = 0;
         selectedQuestionSet = new Set();
         if (!sessionResults[dbIndex]) sessionResults[dbIndex] = {};
 
@@ -895,7 +793,6 @@
     function startSpecificQuestion(queueIndices) {
         playQueue = queueIndices;
         playQueuePos = 0;
-        score = 0;
         renderQuestion();
         switchView('view-quiz');
     }
@@ -1277,17 +1174,15 @@
             playQueuePos++;
             if (playQueuePos < playQueue.length) renderQuestion();
             else {
-                const total = playQueue.length;
-                saveLastScore(currentDbIndex, total);
                 initApp();
-                showResultScreen(total);
+                returnToProblemSelect();
             }
         }
     }
 
     function submitSelfGrade(mark, btn) {
         const qIdx = playQueue[playQueuePos];
-        sessionResults[currentDbIndex][qIdx] = { mark, score: 0 };
+        sessionResults[currentDbIndex][qIdx] = { mark };
         isWaitingForSelfGrade = false;
         isAnswerRevealed = true;
 
@@ -1297,7 +1192,7 @@
 
         const actionBtn = document.getElementById('action-btn');
         actionBtn.style.display = 'block';
-        actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '結果を見る';
+        actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
         updateProgressBar();
         playSound(mark === 'correct' ? 'correct' : 'incorrect');
     }
@@ -1318,7 +1213,7 @@
         }
 
         isAnswerRevealed = true;
-        actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '結果を見る';
+        actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
         updateProgressBar();
 
         let isCorrectGlobal = true;
@@ -1424,7 +1319,7 @@
         }
 
         const mark = isCorrectGlobal ? 'correct' : 'incorrect';
-        sessionResults[currentDbIndex][qIdx] = { mark, score: 0 };
+        sessionResults[currentDbIndex][qIdx] = { mark };
 
         playSound(isCorrectGlobal ? 'correct' : 'incorrect');
 
@@ -1439,68 +1334,7 @@
         const pct = Math.round(((playQueuePos + 1) / playQueue.length) * 100);
         document.getElementById('progress-bar').style.width = pct + '%';
     }
-
-    function showResultScreen(total) {
-        playSound('complete');
-
-        const msgEl = document.getElementById('score-message');
-        msgEl.style.color = 'var(--neon-blue)';
-        msgEl.innerText = '🎉 演習が完了しました！よく頑張りました。';
-
-        const results = sessionResults[currentDbIndex];
-        let cCorrect = 0, cPartial = 0, cIncorrect = 0;
-        playQueue.forEach(qi => {
-            const r = results[qi];
-            if (!r) return;
-            if (r.mark === 'correct') cCorrect++;
-            else if (r.mark === 'partial') cPartial++;
-            else cIncorrect++;
-        });
-        document.getElementById('result-summary-bar').innerHTML = `
-            <div class="result-stat s-correct">
-                <div class="stat-num">${cCorrect}</div>
-                <div class="stat-label">正解</div>
-            </div>
-            <div style="color:var(--text-muted); font-size:2rem; align-self:center;">/</div>
-            <div class="result-stat s-partial">
-                <div class="stat-num" style="color:var(--neon-yellow);">${cPartial}</div>
-                <div class="stat-label">部分点</div>
-            </div>
-            <div style="color:var(--text-muted); font-size:2rem; align-self:center;">/</div>
-            <div class="result-stat s-incorrect">
-                <div class="stat-num" style="color:var(--neon-red);">${cIncorrect}</div>
-                <div class="stat-label">不正解</div>
-            </div>
-        `;
-
-        const tbody = document.getElementById('result-detail-body');
-        tbody.innerHTML = '';
-        playQueue.forEach((qi, pos) => {
-            const q = currentSession.questions[qi];
-            const res = results[qi];
-            const mark = res ? res.mark : null;
-            let icon = '—', cls = '';
-            if (mark === 'correct') { icon = '○'; cls = 'ci'; }
-            else if (mark === 'partial') { icon = '△'; cls = 'cp'; }
-            else if (mark === 'incorrect') { icon = '✗'; cls = 'cx'; }
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="color:var(--text-muted);">${pos + 1}</td>
-                <td>${q.title || `第 ${qi + 1} 問`}</td>
-                <td class="result-mark-cell"><span class="mark-icon ${cls}">${icon}</span></td>
-            `;
-            tbody.appendChild(tr);
-        });
-        switchView('view-result');
-    }
-
-    function retryWrongAnswers() {
-        playSound('click');
-        const results = sessionResults[currentDbIndex] || {};
-        const wrongIds = playQueue.filter(qi => results[qi] && results[qi].mark === 'incorrect');
-        if (!wrongIds.length) { alert('不正解の問題はありません！'); return; }
-        startSpecificQuestion(wrongIds);
-    }
+    
     </script>
 </body>
 </html>
