@@ -435,13 +435,6 @@
                     </div>
                 </div>
 
-                <!-- モードタブ -->
-                <div class="mode-tabs">
-                    <button class="mode-tab active" id="tab-all" onclick="switchProblemTab('all')">すべて</button>
-                    <button class="mode-tab" id="tab-wrong" onclick="switchProblemTab('wrong')">✗ 不正解のみ</button>
-                    <button class="mode-tab" id="tab-unanswered" onclick="switchProblemTab('unanswered')">未回答のみ</button>
-                </div>
-
                 <!-- 一括操作ボタン -->
                 <div class="problem-select-controls">
                     <button class="btn btn-secondary" onclick="selectAllQuestions(true)">☑ 全問題選択</button>
@@ -612,7 +605,7 @@
     function returnToProblemSelect() {
         playSound('click');
         if (currentSession) {
-            renderProblemContainer(currentProblemTab);
+            renderProblemContainer();
             switchView('view-problem-select');
         } else {
             returnToMenu();
@@ -651,31 +644,16 @@
 
         document.getElementById('problem-select-title').innerText = currentSession.categoryName;
         syncSettingUI();
-        renderProblemContainer('all');
+        renderProblemContainer();
         switchView('view-problem-select');
     }
 
-    let currentProblemTab = 'all';
-    function switchProblemTab(tab) {
-        currentProblemTab = tab;
-        ['all', 'wrong', 'unanswered'].forEach(t => {
-            document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
-        });
-        renderProblemContainer(tab);
-    }
-
-    function renderProblemContainer(filter) {
+    function renderProblemContainer() {
         const container = document.getElementById('problem-container');
         container.innerHTML = '';
-        const results = sessionResults[currentDbIndex] || {};
         const allQuestions = currentSession.questions;
 
-        const filteredIndices = allQuestions.map((q, i) => i).filter(i => {
-            const mark = results[i] ? results[i].mark : null;
-            if (filter === 'wrong' && mark !== 'incorrect') return false;
-            if (filter === 'unanswered' && mark) return false;
-            return true;
-        });
+        const filteredIndices = allQuestions.map((q, i) => i);
 
         if (!filteredIndices.length) {
             container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">
@@ -725,18 +703,12 @@
     function selectAllQuestions(doSelect) {
         playSound('click');
         const allQ = currentSession.questions;
-        const results = sessionResults[currentDbIndex] || {};
-        const filteredIndices = allQ.map((q, i) => i).filter(i => {
-            const mark = results[i] ? results[i].mark : null;
-            if (currentProblemTab === 'wrong' && mark !== 'incorrect') return false;
-            if (currentProblemTab === 'unanswered' && mark) return false;
-            return true;
-        });
+        const filteredIndices = allQ.map((q, i) => i);
 
         if (doSelect) filteredIndices.forEach(i => selectedQuestionSet.add(i));
         else filteredIndices.forEach(i => selectedQuestionSet.delete(i));
         
-        renderProblemContainer(currentProblemTab);
+        renderProblemContainer();
     }
 
     function updateSelCountBar() {
@@ -754,20 +726,6 @@
         startSpecificQuestion(indices);
     }
 
-    function startFilteredQuiz(mode) {
-        playSound('click');
-        const results = sessionResults[currentDbIndex] || {};
-        let indices = currentSession.questions.map((_, i) => i);
-        if (mode === 'wrong') {
-            indices = indices.filter(i => results[i] && results[i].mark === 'incorrect');
-            if (!indices.length) { alert('不正解の問題はありません。'); return; }
-        } else if (mode === 'random') {
-            indices = [...indices].sort(() => Math.random() - 0.5);
-        } else if (quizSettings.randomOrder) {
-            indices = [...indices].sort(() => Math.random() - 0.5);
-        }
-        startSpecificQuestion(indices);
-    }
 
     function startSpecificQuestion(queueIndices) {
         playQueue = queueIndices;
