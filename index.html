@@ -1231,7 +1231,11 @@
         } else if (q.type === 'sequence') {
             let allCorrect = true;
             document.querySelectorAll('.seq-row').forEach((row, idx) => {
-                const correctAns = String(q.parts[idx].answer);
+                let correctAnsRaw = q.parts[idx].answer;
+                if (correctAnsRaw === undefined && q.answers !== undefined) correctAnsRaw = q.answers[idx];
+                if (correctAnsRaw === undefined && q.answer !== undefined) correctAnsRaw = q.answer[idx];
+                const correctAns = String(correctAnsRaw);
+                
                 const userAns = userSelectionSequence[idx] !== undefined ? String(userSelectionSequence[idx]) : undefined;
                 if (userAns === undefined || userAns !== correctAns) allCorrect = false;
                 row.querySelectorAll('.option-btn').forEach(btn => {
