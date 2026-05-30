@@ -62,7 +62,6 @@
             display: none; opacity: 0; transform: translateY(20px);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
         .view-section.active { display: block; opacity: 1; transform: translateY(0); }
 
         .glass-card {
@@ -73,7 +72,7 @@
             padding: 30px;
         }
 
-        /* メニュー */
+        /* ===== メニュー ===== */
         .menu-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px; margin-top: 20px;
@@ -85,30 +84,86 @@
         }
         .menu-title { font-size: 1.3rem; color: var(--neon-blue); margin-bottom: 10px; font-weight: bold; }
         .menu-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; }
+        .menu-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .menu-count { color: var(--neon-purple); font-size: 0.85rem; }
 
-        /* 問題選択グリッド */
+        /* 前回スコアバッジ */
+        .last-score-badge {
+            font-size: 0.8rem; font-weight: bold; padding: 3px 10px;
+            border-radius: 20px; background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .last-score-badge.perfect { color: var(--neon-green); border-color: var(--neon-green); }
+        .last-score-badge.good    { color: var(--neon-blue);  border-color: var(--neon-blue); }
+        .last-score-badge.fair    { color: var(--neon-yellow);border-color: var(--neon-yellow); }
+        .last-score-badge.poor    { color: var(--neon-red);   border-color: var(--neon-red); }
+
+        /* ===== 問題選択グリッド ===== */
+        .problem-select-controls {
+            display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;
+        }
+        .problem-select-controls .btn { flex: 1; min-width: 140px; font-size: 0.9rem; padding: 10px 16px; }
+
         .problem-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            gap: 15px; margin-top: 20px; max-height: 50vh; overflow-y: auto; padding-right: 10px;
+            gap: 12px; margin-top: 10px; max-height: 50vh; overflow-y: auto; padding-right: 8px;
         }
         .problem-item {
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-main); padding: 15px 10px; border-radius: 8px;
-            text-align: center; cursor: pointer; transition: all 0.2s; font-weight: bold; font-size: 1.1rem;
+            color: var(--text-main); padding: 12px 10px; border-radius: 8px;
+            text-align: center; cursor: pointer; transition: all 0.2s; font-weight: bold; font-size: 1rem;
+            position: relative;
         }
         .problem-item:hover {
             background: rgba(0, 242, 254, 0.1); border-color: var(--neon-blue); transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0, 242, 254, 0.2);
         }
+        /* 正誤マーク */
+        .problem-item .result-mark {
+            position: absolute; top: -6px; right: -6px;
+            width: 20px; height: 20px; border-radius: 50%;
+            font-size: 0.7rem; font-weight: bold; display: flex; align-items: center; justify-content: center;
+            border: 2px solid var(--bg-base);
+        }
+        .result-mark.mark-correct   { background: var(--neon-green); color: #000; }
+        .result-mark.mark-partial   { background: var(--neon-yellow); color: #000; }
+        .result-mark.mark-incorrect { background: var(--neon-red);   color: #fff; }
+        .problem-item.answered-correct   { border-color: rgba(16,185,129,0.5); }
+        .problem-item.answered-partial   { border-color: rgba(251,191,36,0.5); }
+        .problem-item.answered-incorrect { border-color: rgba(239,68,68,0.5); }
 
-        /* クイズ領域 */
+        /* ===== 進捗バー ===== */
+        .progress-bar-wrap {
+            width: 100%; background: rgba(255,255,255,0.08); border-radius: 99px;
+            height: 6px; margin-bottom: 18px; overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%; border-radius: 99px;
+            background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+            transition: width 0.5s ease;
+        }
+
+        /* ===== クイズ領域 ===== */
         .quiz-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;
+            margin-bottom: 10px;
         }
+        .quiz-title-text { color: var(--neon-blue); font-weight: bold; font-size: 1.1rem; }
+        .quiz-progress-text { color: var(--neon-purple); font-weight: bold; font-size: 1rem; }
+
         .question-text { font-size: 1.15rem; line-height: 1.9; margin-bottom: 30px; }
 
-        /* 選択式関連 */
+        /* モード切り替えタブ（問題選択画面） */
+        .mode-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .mode-tab {
+            padding: 7px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.2);
+            background: transparent; color: var(--text-muted); transition: all 0.2s;
+        }
+        .mode-tab:hover { border-color: var(--neon-blue); color: var(--text-main); }
+        .mode-tab.active { background: rgba(0,242,254,0.15); border-color: var(--neon-blue); color: var(--neon-blue); }
+
+        /* ===== 選択式 ===== */
         .options-grid { display: flex; flex-direction: column; gap: 12px; }
         .seq-row { margin-bottom: 20px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 15px; }
         .seq-label { display: block; margin-bottom: 10px; color: var(--neon-blue); font-weight: bold; }
@@ -118,11 +173,19 @@
             background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-main); padding: 14px 20px; border-radius: 12px;
             font-size: 1.05rem; text-align: left; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 10px;
         }
         .option-btn:hover { background: rgba(0, 242, 254, 0.1); border-color: var(--neon-blue); }
         .option-btn.selected { background: rgba(0, 242, 254, 0.2); border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); }
+        /* キーボードショートカット用バッジ */
+        .shortcut-badge {
+            min-width: 24px; height: 24px; border-radius: 6px;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); flex-shrink: 0;
+        }
 
-        /* タイピング空欄補充 */
+        /* ===== タイピング空欄補充 ===== */
         .blank-input {
             background: rgba(0, 0, 0, 0.3); border: none; border-bottom: 2px solid var(--neon-purple);
             color: var(--text-main); font-size: 1.1rem; padding: 4px 8px; margin: 0 4px;
@@ -133,7 +196,7 @@
         .blank-input.incorrect { border-bottom-color: var(--neon-red); color: var(--neon-red); background: rgba(239, 68, 68, 0.1); text-decoration: line-through; }
         .correct-answer-label { color: var(--neon-green); font-size: 0.9rem; font-weight: bold; margin-left: 5px; }
 
-        /* ドラッグ＆ドロップ空欄補充 */
+        /* ===== ドラッグ＆ドロップ空欄補充 ===== */
         .word-bank {
             display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px;
             padding: 20px; background: rgba(0, 0, 0, 0.2); border-radius: 12px;
@@ -159,7 +222,20 @@
         .drop-zone.correct { border-bottom-color: var(--neon-green) !important; background: rgba(16, 185, 129, 0.1); }
         .drop-zone.incorrect { border-bottom-color: var(--neon-red) !important; background: rgba(239, 68, 68, 0.1); }
 
-        /* 論述問題（自己採点） */
+        /* ===== 解説パネル ===== */
+        .explanation-panel {
+            margin-top: 20px; padding: 20px;
+            background: rgba(0, 242, 254, 0.05);
+            border-radius: 12px; border-left: 4px solid var(--neon-blue);
+            animation: fadeIn 0.4s; display: none;
+        }
+        .explanation-panel .exp-title {
+            color: var(--neon-blue); font-weight: bold; font-size: 0.9rem;
+            margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+        }
+        .explanation-panel .exp-body { color: var(--text-main); font-size: 1rem; line-height: 1.8; }
+
+        /* ===== 論述問題（自己採点） ===== */
         .essay-textarea {
             width: 100%; height: 180px; background: rgba(0,0,0,0.3);
             border: 1px solid var(--neon-purple); border-radius: 12px;
@@ -178,13 +254,13 @@
             flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1.05rem;
             cursor: pointer; border: none; transition: all 0.2s; color: #000;
         }
-        .grade-btn.g-correct { background: var(--neon-green); box-shadow: 0 0 15px rgba(16,185,129,0.3); }
-        .grade-btn.g-partial { background: var(--neon-yellow); box-shadow: 0 0 15px rgba(245,158,11,0.3); }
-        .grade-btn.g-incorrect { background: var(--neon-red); box-shadow: 0 0 15px rgba(239,68,68,0.3); }
+        .grade-btn.g-correct  { background: var(--neon-green); box-shadow: 0 0 15px rgba(16,185,129,0.3); }
+        .grade-btn.g-partial  { background: var(--neon-yellow); box-shadow: 0 0 15px rgba(245,158,11,0.3); }
+        .grade-btn.g-incorrect{ background: var(--neon-red);   box-shadow: 0 0 15px rgba(239,68,68,0.3); }
         .grade-btn:hover { filter: brightness(1.15); transform: translateY(-2px); }
 
-        /* ボタン類 */
-        .controls { display: flex; gap: 15px; margin-top: 30px; }
+        /* ===== ボタン類 ===== */
+        .controls { display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap; }
         .btn {
             padding: 14px 24px; border: none; border-radius: 8px;
             font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; letter-spacing: 1px;
@@ -195,15 +271,74 @@
         .btn-secondary { background: transparent; color: var(--text-main); border: 1px solid rgba(255, 255, 255, 0.2); flex-grow: 1; }
         .btn-secondary:hover { background: rgba(255, 255, 255, 0.05); border-color: var(--text-main); }
 
-        /* 結果画面 */
+        /* キーボードヒント */
+        .keyboard-hint {
+            text-align: center; color: var(--text-muted); font-size: 0.78rem;
+            margin-top: 10px; opacity: 0.7;
+        }
+        .keyboard-hint kbd {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 4px; padding: 1px 6px; font-size: 0.75rem; font-family: monospace;
+        }
+
+        /* ===== 結果画面 ===== */
         .score-circle {
             width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--neon-blue);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            margin: 40px auto; box-shadow: 0 0 30px rgba(0, 242, 254, 0.2), inset 0 0 20px rgba(0, 242, 254, 0.1);
+            margin: 30px auto; box-shadow: 0 0 30px rgba(0, 242, 254, 0.2), inset 0 0 20px rgba(0, 242, 254, 0.1);
         }
         .score-num { font-size: 3rem; font-weight: bold; color: var(--neon-blue); }
 
+        /* 結果詳細テーブル */
+        .result-detail-wrap {
+            margin-top: 20px; max-height: 40vh; overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+        }
+        .result-detail-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .result-detail-table th {
+            position: sticky; top: 0; background: rgba(15,23,42,0.95);
+            padding: 10px 14px; color: var(--text-muted); font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;
+        }
+        .result-detail-table td {
+            padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: middle;
+        }
+        .result-detail-table tr:last-child td { border-bottom: none; }
+        .result-detail-table tr:hover td { background: rgba(255,255,255,0.03); }
+        .result-mark-cell { text-align: center; }
+        .mark-icon { font-size: 1.1rem; }
+        .mark-icon.ci  { color: var(--neon-green); }
+        .mark-icon.cp  { color: var(--neon-yellow); }
+        .mark-icon.cx  { color: var(--neon-red); }
+
+        /* 結果サマリーバー */
+        .result-summary-bar {
+            display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .result-stat { text-align: center; }
+        .result-stat .stat-num { font-size: 2rem; font-weight: bold; }
+        .result-stat .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        .result-stat.s-correct  .stat-num { color: var(--neon-green); }
+        .result-stat.s-partial  .stat-num { color: var(--neon-yellow); }
+        .result-stat.s-incorrect.stat-num { color: var(--neon-red); }
+
+        /* スコア率に応じたメッセージ */
+        .score-message { font-size: 1.2rem; font-weight: bold; margin: 10px 0 20px; }
+
+        /* スクロールバー調整 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 99px; }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn {
+            0%   { transform: scale(0.7); opacity: 0; }
+            70%  { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.4,0,0.2,1); }
     </style>
 </head>
 <body onload="initApp()">
@@ -214,6 +349,7 @@
     </header>
 
     <main>
+        <!-- ===== メニュー ===== -->
         <section id="view-menu" class="view-section active">
             <div style="text-align: center; margin-bottom: 20px; color: var(--text-muted);">
                 学習を開始するセッションを選択してください。
@@ -221,12 +357,26 @@
             <div class="menu-grid" id="menu-container"></div>
         </section>
 
+        <!-- ===== 問題選択 ===== -->
         <section id="view-problem-select" class="view-section">
             <div class="glass-card">
-                <h2 id="problem-select-title" style="color: var(--neon-blue); margin-bottom: 10px; text-align: center;">セッション名</h2>
-                <div style="text-align: center; margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem;">
-                    解きたい問題を選択してください
+                <h2 id="problem-select-title" style="color: var(--neon-blue); margin-bottom: 6px; text-align: center;"></h2>
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">解きたい問題を選択してください</p>
+
+                <!-- モードタブ -->
+                <div class="mode-tabs">
+                    <button class="mode-tab active" id="tab-all" onclick="switchProblemTab('all')">すべて</button>
+                    <button class="mode-tab" id="tab-wrong" onclick="switchProblemTab('wrong')">✗ 不正解のみ</button>
+                    <button class="mode-tab" id="tab-unanswered" onclick="switchProblemTab('unanswered')">未回答のみ</button>
                 </div>
+
+                <!-- 一括操作ボタン -->
+                <div class="problem-select-controls">
+                    <button class="btn btn-secondary" onclick="startFilteredQuiz('all')">▶ 全問出題</button>
+                    <button class="btn btn-secondary" onclick="startFilteredQuiz('wrong')">✗ 不正解のみ再挑戦</button>
+                    <button class="btn btn-secondary" onclick="startFilteredQuiz('random')">🔀 ランダム出題</button>
+                </div>
+
                 <div class="problem-grid" id="problem-container"></div>
                 <div class="controls">
                     <button class="btn btn-secondary" style="width: 100%;" onclick="returnToMenu()">← セッション選択に戻る</button>
@@ -234,13 +384,20 @@
             </div>
         </section>
 
+        <!-- ===== クイズ ===== -->
         <section id="view-quiz" class="view-section">
             <div class="glass-card">
-                <div class="quiz-header">
-                    <span id="quiz-title" style="color: var(--neon-blue); font-weight: bold; font-size: 1.2rem;"></span>
-                    <span id="quiz-progress" style="color: var(--neon-purple); font-weight: bold;"></span>
+                <!-- 進捗バー -->
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="progress-bar" style="width: 0%;"></div>
                 </div>
-                
+
+                <div class="quiz-header">
+                    <span class="quiz-title-text" id="quiz-title"></span>
+                    <span class="quiz-progress-text" id="quiz-progress"></span>
+                </div>
+
+                <!-- ドラッグ語群 -->
                 <div id="word-bank-area" style="display: none;">
                     <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">語群 (ドラッグして空欄に配置してください)</div>
                     <div id="word-bank" class="word-bank" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)"></div>
@@ -249,6 +406,13 @@
                 <div id="question-area" class="question-text"></div>
                 <div id="options-area" class="options-grid"></div>
 
+                <!-- 解説パネル（答え合わせ後） -->
+                <div id="explanation-panel" class="explanation-panel">
+                    <div class="exp-title">📖 解説</div>
+                    <div id="explanation-text" class="exp-body"></div>
+                </div>
+
+                <!-- 論述・自己採点パネル -->
                 <div id="essay-sample-area" class="self-grade-panel">
                     <div style="color: var(--neon-green); font-weight: bold; margin-bottom: 10px;">■ 解答例・解説</div>
                     <div id="essay-sample-text" style="line-height: 1.8; font-size: 1.05rem; margin-bottom: 20px;"></div>
@@ -263,562 +427,806 @@
                 </div>
 
                 <div class="controls">
-                    <button class="btn btn-secondary" onclick="returnToProblemSelect()">問題一覧に戻る</button>
+                    <button class="btn btn-secondary" onclick="returnToProblemSelect()">問題一覧</button>
                     <button class="btn btn-primary" id="action-btn" onclick="handleAction()">解答する</button>
                 </div>
+                <div class="keyboard-hint" id="keyboard-hint"></div>
             </div>
         </section>
 
+        <!-- ===== 結果 ===== -->
         <section id="view-result" class="view-section">
             <div class="glass-card" style="text-align: center;">
-                <h2 style="font-size: 2rem; margin-bottom: 10px;">演習完了</h2>
-                <p style="color: var(--text-muted);">あなたのスコア</p>
-                <div class="score-circle">
+                <h2 style="font-size: 2rem; margin-bottom: 8px;">演習完了</h2>
+                <p style="color: var(--text-muted); margin-bottom: 0;">あなたのスコア</p>
+
+                <div class="score-circle pop-in" id="score-circle">
                     <div class="score-num" id="final-score">0/0</div>
                     <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">獲得スコア</div>
                 </div>
-                <button class="btn btn-primary" style="width: 100%; max-width: 300px;" onclick="playSound('click'); returnToProblemSelect()">問題一覧へ戻る</button>
+
+                <div class="score-message" id="score-message"></div>
+
+                <!-- 正誤サマリー -->
+                <div class="result-summary-bar" id="result-summary-bar"></div>
+
+                <!-- 詳細テーブル -->
+                <div class="result-detail-wrap">
+                    <table class="result-detail-table">
+                        <thead>
+                            <tr>
+                                <th style="width:50px">問</th>
+                                <th>タイトル</th>
+                                <th style="width:60px; text-align:center;">結果</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-detail-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="controls" style="margin-top: 20px; justify-content: center;">
+                    <button class="btn btn-secondary" onclick="playSound('click'); returnToProblemSelect()">問題一覧へ戻る</button>
+                    <button class="btn btn-primary" style="max-width: 280px;" onclick="playSound('click'); retryWrongAnswers()">✗ 不正解を再挑戦</button>
+                </div>
             </div>
         </section>
     </main>
 
     <script>
-        const questionDatabase = [
-            ...(typeof database1 !== 'undefined' ? database1 : []),
-            ...(typeof database2 !== 'undefined' ? database2 : [])
-        ];
+    // =====================================================
+    //  データベース読み込み
+    // =====================================================
+    const questionDatabase = [
+        ...(typeof database1 !== 'undefined' ? database1 : []),
+        ...(typeof database2 !== 'undefined' ? database2 : [])
+    ];
 
-        // --- オーディオシステム ---
-        let audioCtx = null;
-        function initAudio() {
-            if (!audioCtx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) audioCtx = new AudioContext();
-            }
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    // =====================================================
+    //  オーディオシステム
+    // =====================================================
+    let audioCtx = null;
+    function initAudio() {
+        if (!audioCtx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) audioCtx = new AudioContext();
         }
-        function playTone(freq, type, duration, vol=0.1, delay=0) {
-            if(!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
-            gain.gain.setValueAtTime(vol, audioCtx.currentTime + delay);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(audioCtx.currentTime + delay);
-            osc.stop(audioCtx.currentTime + delay + duration);
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    function playTone(freq, type, duration, vol = 0.1, delay = 0) {
+        if (!audioCtx) return;
+        const osc  = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + duration);
+    }
+    function playSound(type) {
+        initAudio();
+        if (type === 'correct') {
+            playTone(600, 'sine', 0.1, 0.1);
+            playTone(800, 'sine', 0.2, 0.1, 0.1);
+        } else if (type === 'incorrect') {
+            playTone(300, 'sawtooth', 0.2, 0.1);
+            playTone(250, 'sawtooth', 0.3, 0.1, 0.15);
+        } else if (type === 'drop') {
+            playTone(400, 'sine', 0.1, 0.05);
+        } else if (type === 'click') {
+            playTone(500, 'sine', 0.05, 0.05);
+        } else if (type === 'complete') {
+            [0, 0.12, 0.24].forEach((d, i) => playTone(500 + i * 150, 'sine', 0.25, 0.12, d));
         }
-        function playSound(type) {
-            initAudio();
-            if(type === 'correct') {
-                playTone(600, 'sine', 0.1, 0.1);
-                playTone(800, 'sine', 0.2, 0.1, 0.1);
-            } else if (type === 'incorrect') {
-                playTone(300, 'sawtooth', 0.2, 0.1);
-                playTone(250, 'sawtooth', 0.3, 0.1, 0.15);
-            } else if (type === 'drop') {
-                playTone(400, 'sine', 0.1, 0.05);
-            } else if (type === 'click') {
-                playTone(500, 'sine', 0.05, 0.05);
-            }
-        }
+    }
 
-        // --- グローバル変数 ---
-        let currentSession = null;
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let isAnswerRevealed = false;
-        let isWaitingForSelfGrade = false;
-        
-        let userSelectionSingle = null;
-        let userSelectionMulti = [];
-        let userSelectionSequence = {};
+    // =====================================================
+    //  グローバル変数
+    // =====================================================
+    let currentSession      = null;    // 現在のセッションオブジェクト
+    let currentDbIndex      = -1;      // questionDatabase 内のインデックス
+    let playQueue           = [];      // 出題する問題インデックスの配列（元データ内インデックス）
+    let playQueuePos        = 0;       // playQueue 上の現在位置
+    let score               = 0;
+    let isAnswerRevealed    = false;
+    let isWaitingForSelfGrade = false;
 
-        // --- 画面遷移管理 ---
-        function switchView(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-        }
+    let userSelectionSingle   = null;
+    let userSelectionMulti    = [];
+    let userSelectionSequence = {};
 
-        function returnToMenu() {
-            playSound('click');
-            switchView('view-menu');
-        }
+    // 問題ごとの正誤記録: sessionResults[dbIndex][questionIndex] = { mark, score }
+    // mark: 'correct' | 'partial' | 'incorrect'
+    const sessionResults = {};
 
-        function returnToProblemSelect() {
-            playSound('click');
-            if(currentSession) switchView('view-problem-select');
-            else returnToMenu();
-        }
+    // ローカルストレージキー
+    const LS_KEY_SCORE = 'kakomon_last_scores'; // { dbIndex: { score, total, time } }
 
-        // --- 初期化・問題選択 ---
-        function initApp() {
-            const container = document.getElementById('menu-container');
-            container.innerHTML = '';
+    // =====================================================
+    //  ローカルストレージ ユーティリティ
+    // =====================================================
+    function loadLastScores() {
+        try { return JSON.parse(localStorage.getItem(LS_KEY_SCORE) || '{}'); }
+        catch { return {}; }
+    }
+    function saveLastScore(dbIndex, score, total) {
+        const data = loadLastScores();
+        data[dbIndex] = { score, total, time: Date.now() };
+        localStorage.setItem(LS_KEY_SCORE, JSON.stringify(data));
+    }
+
+    // =====================================================
+    //  画面遷移管理
+    // =====================================================
+    function switchView(viewId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        const el = document.getElementById(viewId);
+        el.classList.add('active');
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function returnToMenu() {
+        playSound('click');
+        switchView('view-menu');
+    }
+    function returnToProblemSelect() {
+        playSound('click');
+        if (currentSession) switchView('view-problem-select');
+        else returnToMenu();
+    }
+
+    // =====================================================
+    //  初期化・メニュー
+    // =====================================================
+    function initApp() {
+        const container  = document.getElementById('menu-container');
+        container.innerHTML = '';
+        const lastScores = loadLastScores();
+
+        questionDatabase.forEach((qSet, index) => {
+            const qCount = (qSet.questions && Array.isArray(qSet.questions)) ? qSet.questions.length : 0;
+            const last   = lastScores[index];
             
-            questionDatabase.forEach((qSet, index) => {
-                const qCount = (qSet.questions && Array.isArray(qSet.questions)) ? qSet.questions.length : 0;
-                const card = document.createElement('div');
-                card.className = 'glass-card menu-item';
-                card.innerHTML = `
-                    <div class="menu-title">${qSet.categoryName}</div>
-                    <div class="menu-desc">${qSet.description}</div>
-                    <div style="margin-top: 15px; color: var(--neon-purple); font-size: 0.85rem;">全 ${qCount} 問</div>
-                `;
-                card.onclick = () => {
-                    playSound('click');
-                    showProblemSelection(index);
-                };
-                container.appendChild(card);
+            let badgeHtml = '';
+            if (last) {
+                const pct = last.total > 0 ? last.score / last.total : 0;
+                let cls = pct >= 1 ? 'perfect' : pct >= 0.7 ? 'good' : pct >= 0.4 ? 'fair' : 'poor';
+                badgeHtml = `<span class="last-score-badge ${cls}">前回 ${last.score}/${last.total}</span>`;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'glass-card menu-item';
+            card.innerHTML = `
+                <div class="menu-title">${qSet.categoryName}</div>
+                <div class="menu-desc">${qSet.description}</div>
+                <div class="menu-meta">
+                    <span class="menu-count">全 ${qCount} 問</span>
+                    ${badgeHtml}
+                </div>
+            `;
+            card.onclick = () => { playSound('click'); showProblemSelection(index); };
+            container.appendChild(card);
+        });
+    }
+
+    // =====================================================
+    //  問題選択画面
+    // =====================================================
+    function showProblemSelection(dbIndex) {
+        initAudio();
+        currentDbIndex  = dbIndex;
+        currentSession  = questionDatabase[dbIndex];
+        score           = 0;
+
+        // セッション結果初期化（初回のみ）
+        if (!sessionResults[dbIndex]) sessionResults[dbIndex] = {};
+
+        document.getElementById('problem-select-title').innerText = currentSession.categoryName;
+        renderProblemGrid('all');
+        switchView('view-problem-select');
+    }
+
+    let currentProblemTab = 'all';
+    function switchProblemTab(tab) {
+        currentProblemTab = tab;
+        ['all', 'wrong', 'unanswered'].forEach(t => {
+            document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+        });
+        renderProblemGrid(tab);
+    }
+
+    function renderProblemGrid(filter) {
+        const container = document.getElementById('problem-container');
+        container.innerHTML = '';
+        const results = sessionResults[currentDbIndex] || {};
+
+        currentSession.questions.forEach((q, idx) => {
+            const res  = results[idx];
+            const mark = res ? res.mark : null;
+
+            // フィルター適用
+            if (filter === 'wrong'      && mark !== 'incorrect') return;
+            if (filter === 'unanswered' && mark)                 return;
+
+            const btn = document.createElement('div');
+            btn.className = 'problem-item';
+            if (mark) btn.classList.add(`answered-${mark}`);
+            btn.innerHTML = `第 ${idx + 1} 問`;
+            if (mark) {
+                const icon = mark === 'correct' ? '○' : mark === 'partial' ? '△' : '✗';
+                btn.innerHTML += `<span class="result-mark mark-${mark}">${icon}</span>`;
+            }
+            btn.onclick = () => { playSound('click'); startSpecificQuestion([idx]); };
+            container.appendChild(btn);
+        });
+
+        if (!container.children.length) {
+            container.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:30px;">
+                該当する問題はありません。
+            </div>`;
+        }
+    }
+
+    // =====================================================
+    //  出題モード別スタート
+    // =====================================================
+    function startFilteredQuiz(mode) {
+        playSound('click');
+        const results = sessionResults[currentDbIndex] || {};
+        let indices = currentSession.questions.map((_, i) => i);
+
+        if (mode === 'wrong') {
+            indices = indices.filter(i => results[i] && results[i].mark === 'incorrect');
+            if (!indices.length) { alert('不正解の問題はありません。'); return; }
+        } else if (mode === 'random') {
+            indices = [...indices].sort(() => Math.random() - 0.5);
+        }
+        startSpecificQuestion(indices);
+    }
+
+    // =====================================================
+    //  出題開始（キュー方式）
+    // =====================================================
+    function startSpecificQuestion(queueIndices) {
+        playQueue    = queueIndices;
+        playQueuePos = 0;
+        score        = 0;
+        renderQuestion();
+        switchView('view-quiz');
+    }
+
+    // =====================================================
+    //  問題描画
+    // =====================================================
+    function renderQuestion() {
+        const q = currentSession.questions[playQueue[playQueuePos]];
+        isAnswerRevealed      = false;
+        isWaitingForSelfGrade = false;
+        userSelectionSingle   = null;
+        userSelectionMulti    = [];
+        userSelectionSequence = {};
+
+        // 進捗バー更新
+        const pct = Math.round((playQueuePos / playQueue.length) * 100);
+        document.getElementById('progress-bar').style.width = pct + '%';
+
+        document.getElementById('quiz-title').innerText   = q.title || `第 ${playQueue[playQueuePos] + 1} 問`;
+        document.getElementById('quiz-progress').innerText = `${playQueuePos + 1} / ${playQueue.length}`;
+
+        const qArea     = document.getElementById('question-area');
+        const oArea     = document.getElementById('options-area');
+        const wArea     = document.getElementById('word-bank-area');
+        const wBank     = document.getElementById('word-bank');
+        const eArea     = document.getElementById('essay-sample-area');
+        const expPanel  = document.getElementById('explanation-panel');
+        const actionBtn = document.getElementById('action-btn');
+        const kbHint    = document.getElementById('keyboard-hint');
+
+        oArea.innerHTML  = '';
+        wBank.innerHTML  = '';
+        wArea.style.display  = 'none';
+        eArea.style.display  = 'none';
+        expPanel.style.display = 'none';
+        document.getElementById('explanation-text').innerHTML = '';
+        actionBtn.style.display = 'block';
+        actionBtn.innerText     = '解答する';
+        kbHint.innerHTML = '';
+
+        if (q.type === 'single' || q.type === 'multi' || q.type === 'sequence') {
+            qArea.innerHTML = q.text.replace(/\n/g, '<br>');
+            actionBtn.disabled = true;
+        } else if (q.type === 'fill') {
+            let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
+                `<input type="text" class="blank-input" data-id="${p1}" placeholder="空欄 ${p1}" autocomplete="off">`
+            );
+            qArea.innerHTML = formattedText;
+            // Enterキーで解答
+            qArea.querySelectorAll('.blank-input').forEach(inp => {
+                inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !isAnswerRevealed) handleAction(); });
             });
+            actionBtn.disabled = false;
+            kbHint.innerHTML = '<kbd>Enter</kbd> で解答';
+        } else if (q.type === 'drag-fill') {
+            wArea.style.display = 'block';
+            let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
+                `<span class="drop-zone" data-id="${p1}" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)"></span>`
+            );
+            qArea.innerHTML = formattedText;
+            let words = [...q.wordBank].sort(() => Math.random() - 0.5);
+            words.forEach((word, idx) => {
+                const div = document.createElement('div');
+                div.className   = 'draggable-item';
+                div.draggable   = true;
+                div.id          = `drag-item-${idx}`;
+                div.dataset.val = word;
+                div.innerText   = word;
+                div.addEventListener('dragstart',  drag);
+                div.addEventListener('touchstart', handleTouchStart, { passive: false });
+                div.addEventListener('touchmove',  handleTouchMove,  { passive: false });
+                div.addEventListener('touchend',   handleTouchEnd);
+                wBank.appendChild(div);
+            });
+            actionBtn.disabled = true;
+        } else if (q.type === 'essay') {
+            qArea.innerHTML = q.text.replace(/\n/g, '<br>') +
+                `<textarea class="essay-textarea" placeholder="ここに解答を記述してください..."></textarea>`;
+            actionBtn.innerText = '解答例を確認する';
+            actionBtn.disabled  = false;
+            kbHint.innerHTML = '<kbd>Enter</kbd> で解答確認 （Shift+Enterで改行）';
         }
 
-        function showProblemSelection(dbIndex) {
-            initAudio();
-            currentSession = questionDatabase[dbIndex];
-            score = 0;
-            
-            document.getElementById('problem-select-title').innerText = currentSession.categoryName;
-            
-            const container = document.getElementById('problem-container');
-            container.innerHTML = '';
-            
-            currentSession.questions.forEach((q, idx) => {
-                const btn = document.createElement('div');
-                btn.className = 'problem-item';
-                btn.innerText = `第 ${idx + 1} 問`;
+        // ===== 選択肢の生成 =====
+        if (q.type === 'single') {
+            q.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span class="shortcut-badge">${i + 1}</span>${opt.text}`;
+                btn.dataset.optId = opt.id;
                 btn.onclick = () => {
+                    if (isAnswerRevealed) return;
                     playSound('click');
-                    startSpecificQuestion(idx);
+                    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    userSelectionSingle = opt.id;
+                    actionBtn.disabled  = false;
                 };
-                container.appendChild(btn);
+                oArea.appendChild(btn);
             });
-            
-            switchView('view-problem-select');
-        }
-
-        function startSpecificQuestion(idx) {
-            currentQuestionIndex = idx;
-            renderQuestion();
-            switchView('view-quiz');
-        }
-
-        // --- 問題描画 ---
-        function renderQuestion() {
-            const q = currentSession.questions[currentQuestionIndex];
-            isAnswerRevealed = false;
-            isWaitingForSelfGrade = false;
-            userSelectionSingle = null;
-            userSelectionMulti = [];
-            userSelectionSequence = {};
-
-            document.getElementById('quiz-title').innerText = q.title || `第 ${currentQuestionIndex + 1} 問`;
-            document.getElementById('quiz-progress').innerText = `${currentQuestionIndex + 1} / ${currentSession.questions.length}`;
-            
-            const qArea = document.getElementById('question-area');
-            const oArea = document.getElementById('options-area');
-            const wArea = document.getElementById('word-bank-area');
-            const wBank = document.getElementById('word-bank');
-            const eArea = document.getElementById('essay-sample-area');
-            const actionBtn = document.getElementById('action-btn');
-            
-            oArea.innerHTML = '';
-            wBank.innerHTML = '';
-            wArea.style.display = 'none';
-            eArea.style.display = 'none';
-            actionBtn.style.display = 'block';
-            actionBtn.innerText = '解答する';
-            
-            if (q.type === 'single' || q.type === 'multi' || q.type === 'sequence') {
-                qArea.innerHTML = q.text.replace(/\n/g, '<br>');
-                actionBtn.disabled = true;
-            } 
-            else if (q.type === 'fill') {
-                let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (match, p1) => {
-                    return `<input type="text" class="blank-input" data-id="${p1}" placeholder="空欄 ${p1}" autocomplete="off">`;
-                });
-                qArea.innerHTML = formattedText;
-                actionBtn.disabled = false;
-
-                // ★追加: 同一解答番号の入力内容をリアルタイムで同期する処理
-                const fillInputs = document.querySelectorAll('.blank-input');
-                fillInputs.forEach(input => {
-                    input.addEventListener('input', function() {
-                        const currentVal = this.value;
-                        const currentId = this.dataset.id;
-                        fillInputs.forEach(otherInput => {
-                            if (otherInput.dataset.id === currentId && otherInput !== this) {
-                                otherInput.value = currentVal;
-                            }
-                        });
-                    });
-                });
-            }
-            else if (q.type === 'drag-fill') {
-                wArea.style.display = 'block';
-                let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (match, p1) => {
-                    return `<span class="drop-zone" data-id="${p1}" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)"></span>`;
-                });
-                qArea.innerHTML = formattedText;
-                
-                let words = [...q.wordBank].sort(() => Math.random() - 0.5);
-                words.forEach((word, idx) => {
-                    const div = document.createElement('div');
-                    div.className = 'draggable-item';
-                    div.draggable = true;
-                    div.id = `drag-item-${idx}`;
-                    div.dataset.val = word;
-                    div.innerText = word;
-                    div.addEventListener('dragstart', drag);
-                    div.addEventListener('touchstart', handleTouchStart, {passive: false});
-                    div.addEventListener('touchmove', handleTouchMove, {passive: false});
-                    div.addEventListener('touchend', handleTouchEnd);
-                    wBank.appendChild(div);
-                });
-                actionBtn.disabled = true;
-            }
-            else if (q.type === 'essay') {
-                qArea.innerHTML = q.text.replace(/\n/g, '<br>') + 
-                    `<textarea class="essay-textarea" placeholder="ここに解答を記述してください..."></textarea>`;
-                actionBtn.innerText = '解答例を確認する';
-                actionBtn.disabled = false;
-            }
-
-            // 選択肢の生成
-            if (q.type === 'single') {
-                q.options.forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.className = 'option-btn';
-                    btn.innerText = opt.text;
-                    btn.onclick = () => {
-                        if(isAnswerRevealed) return;
-                        playSound('click');
-                        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-                        btn.classList.add('selected');
-                        userSelectionSingle = opt.id;
-                        actionBtn.disabled = false;
-                    };
-                    oArea.appendChild(btn);
-                });
-            } else if (q.type === 'multi') {
-                q.options.forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.className = 'option-btn';
-                    btn.innerText = opt.text;
-                    btn.onclick = () => {
-                        if(isAnswerRevealed) return;
-                        playSound('click');
-                        if(userSelectionMulti.includes(opt.id)) {
-                            userSelectionMulti = userSelectionMulti.filter(id => id !== opt.id);
-                            btn.classList.remove('selected');
-                        } else {
-                            if(userSelectionMulti.length < q.req) {
-                                userSelectionMulti.push(opt.id);
-                                btn.classList.add('selected');
-                            }
-                        }
-                        actionBtn.disabled = (userSelectionMulti.length !== q.req);
-                    };
-                    oArea.appendChild(btn);
-                });
-            } else if (q.type === 'sequence') {
-                q.parts.forEach((part, pIdx) => {
-                    const row = document.createElement('div');
-                    row.className = 'seq-row';
-                    row.innerHTML = `<span class="seq-label">${part.label}</span>`;
-                    const grp = document.createElement('div');
-                    grp.className = 'seq-btn-group';
-                    part.options.forEach(opt => {
-                        const btn = document.createElement('button');
-                        btn.className = 'option-btn';
-                        btn.style.flex = '1';
-                        btn.style.textAlign = 'center';
-                        btn.innerText = opt.text;
-                        btn.onclick = () => {
-                            if(isAnswerRevealed) return;
-                            playSound('click');
-                            grp.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            kbHint.innerHTML = '数字キー <kbd>1</kbd>〜<kbd>' + q.options.length + '</kbd> で選択　<kbd>Enter</kbd> で解答';
+        } else if (q.type === 'multi') {
+            q.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span class="shortcut-badge">${i + 1}</span>${opt.text}`;
+                btn.dataset.optId = opt.id;
+                btn.onclick = () => {
+                    if (isAnswerRevealed) return;
+                    playSound('click');
+                    if (userSelectionMulti.includes(opt.id)) {
+                        userSelectionMulti = userSelectionMulti.filter(id => id !== opt.id);
+                        btn.classList.remove('selected');
+                    } else {
+                        if (userSelectionMulti.length < q.req) {
+                            userSelectionMulti.push(opt.id);
                             btn.classList.add('selected');
-                            userSelectionSequence[pIdx] = opt.id;
-                            actionBtn.disabled = Object.keys(userSelectionSequence).length !== q.parts.length;
-                        };
-                        grp.appendChild(btn);
-                    });
-                    row.appendChild(grp);
-                    oArea.appendChild(row);
-                });
-            }
-        }
-
-        // --- ドラッグ＆ドロップ処理 ---
-        function allowDrop(ev) {
-            ev.preventDefault();
-            if(ev.target.classList.contains('drop-zone')) ev.target.classList.add('drag-over');
-        }
-        function dragLeave(ev) {
-            if(ev.target.classList.contains('drop-zone')) ev.target.classList.remove('drag-over');
-        }
-        function drag(ev) {
-            if (isAnswerRevealed) return; 
-            ev.dataTransfer.setData("text", ev.target.id);
-        }
-        function drop(ev) {
-            ev.preventDefault();
-            if (isAnswerRevealed) return;
-            let target = ev.target;
-            if (target.classList.contains('drag-over')) target.classList.remove('drag-over');
-            if (target.classList.contains('draggable-item')) target = target.parentNode;
-
-            var data = ev.dataTransfer.getData("text");
-            var draggedEl = document.getElementById(data);
-            if (!draggedEl) return;
-
-            if (target.classList.contains('drop-zone')) {
-                if (target.hasChildNodes()) document.getElementById('word-bank').appendChild(target.firstChild);
-                target.appendChild(draggedEl);
-                playSound('drop');
-            } else if (target.id === 'word-bank' || target.classList.contains('word-bank')) {
-                document.getElementById('word-bank').appendChild(draggedEl);
-                playSound('drop');
-            }
-            checkDragSubmit();
-        }
-
-        // --- スマホ（タッチ）用 ドラッグ＆ドロップ処理 ---
-        let dragGhost = null;
-        let activeDragEl = null;
-        let touchOffsetX = 0, touchOffsetY = 0;
-
-        function handleTouchStart(e) {
-            if (isAnswerRevealed) return;
-            activeDragEl = e.target;
-            const touch = e.touches[0];
-            const rect = activeDragEl.getBoundingClientRect();
-            
-            dragGhost = activeDragEl.cloneNode(true);
-            dragGhost.style.position = 'fixed';
-            dragGhost.style.left = rect.left + 'px';
-            dragGhost.style.top = rect.top + 'px';
-            dragGhost.style.width = rect.width + 'px';
-            dragGhost.style.height = rect.height + 'px';
-            dragGhost.style.opacity = '0.8';
-            dragGhost.style.zIndex = '9999';
-            dragGhost.style.pointerEvents = 'none';
-            dragGhost.style.margin = '0';
-            document.body.appendChild(dragGhost);
-            
-            activeDragEl.style.opacity = '0.3'; 
-            
-            touchOffsetX = touch.clientX - rect.left;
-            touchOffsetY = touch.clientY - rect.top;
-            playSound('click');
-        }
-
-        function handleTouchMove(e) {
-            if (!dragGhost) return;
-            e.preventDefault();
-            const touch = e.touches[0];
-            dragGhost.style.left = (touch.clientX - touchOffsetX) + 'px';
-            dragGhost.style.top = (touch.clientY - touchOffsetY) + 'px';
-            
-            const target = document.elementFromPoint(touch.clientX, touch.clientY);
-            document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
-            if(target && target.classList.contains('drop-zone')) {
-                target.classList.add('drag-over');
-            }
-        }
-
-        function handleTouchEnd(e) {
-            if (!dragGhost || !activeDragEl) return;
-            const touch = e.changedTouches[0];
-            
-            dragGhost.remove();
-            dragGhost = null;
-            activeDragEl.style.opacity = '1';
-            
-            const target = document.elementFromPoint(touch.clientX, touch.clientY);
-            document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
-
-            if (target) {
-                let dropTarget = target;
-                if (dropTarget.classList.contains('draggable-item')) dropTarget = dropTarget.parentNode;
-                
-                if (dropTarget.classList.contains('drop-zone')) {
-                    if (dropTarget.hasChildNodes()) document.getElementById('word-bank').appendChild(dropTarget.firstChild);
-                    dropTarget.appendChild(activeDragEl);
-                    playSound('drop');
-                } else if (dropTarget.id === 'word-bank' || dropTarget.closest('.word-bank') || dropTarget.closest('#word-bank-area')) {
-                    document.getElementById('word-bank').appendChild(activeDragEl);
-                    playSound('drop');
-                }
-            }
-            activeDragEl = null;
-            checkDragSubmit();
-        }
-
-        function checkDragSubmit() {
-            if(currentSession.questions[currentQuestionIndex].type !== 'drag-fill') return;
-            const blanks = document.querySelectorAll('.drop-zone');
-            let allFilled = true;
-            blanks.forEach(b => { if(!b.hasChildNodes()) allFilled = false; });
-            document.getElementById('action-btn').disabled = !allFilled;
-        }
-
-        // --- 解答・採点処理 ---
-        function handleAction() {
-            if (isWaitingForSelfGrade) return; 
-            playSound('click');
-
-            if (!isAnswerRevealed) {
-                checkAnswer();
-            } else {
-                currentQuestionIndex++;
-                if (currentQuestionIndex < currentSession.questions.length) {
-                    renderQuestion();
-                } else {
-                    document.getElementById('final-score').innerText = `${score} / ${currentSession.questions.length}`;
-                    switchView('view-result');
-                }
-            }
-        }
-
-        function submitSelfGrade(points, btn) {
-            score += points;
-            isWaitingForSelfGrade = false;
-            isAnswerRevealed = true;
-            
-            document.querySelectorAll('.grade-btn').forEach(b => b.style.opacity = '0.4');
-            btn.style.opacity = '1';
-            btn.style.transform = 'scale(1.05)';
-            
-            const actionBtn = document.getElementById('action-btn');
-            actionBtn.style.display = 'block';
-            actionBtn.innerText = '次の問題へ';
-            playSound('click');
-        }
-
-        function checkAnswer() {
-            const q = currentSession.questions[currentQuestionIndex];
-            const actionBtn = document.getElementById('action-btn');
-
-            if (q.type === 'essay') {
-                isWaitingForSelfGrade = true;
-                actionBtn.style.display = 'none';
-                document.getElementById('essay-sample-text').innerHTML = q.sampleAnswer.replace(/\n/g, '<br>');
-                document.getElementById('essay-sample-area').style.display = 'block';
-                document.querySelector('.essay-textarea').readOnly = true;
-                return; 
-            }
-
-            isAnswerRevealed = true;
-            actionBtn.innerText = '次の問題へ';
-            
-            let isCorrectGlobal = true; // 総合判定
-
-            if (q.type === 'single') {
-                isCorrectGlobal = (userSelectionSingle === q.answer);
-                if (isCorrectGlobal) score++;
-                document.querySelectorAll('.option-btn').forEach(btn => {
-                    const optId = q.options.find(o => o.text === btn.innerText).id;
-                    if (optId === q.answer) {
-                        btn.style.borderColor = 'var(--neon-green)';
-                        btn.style.background = 'rgba(16, 185, 129, 0.2)';
-                        btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓ 正解</span>';
-                    } else if (optId === userSelectionSingle && !isCorrectGlobal) {
-                        btn.style.borderColor = 'var(--neon-red)';
-                        btn.style.background = 'rgba(239, 68, 68, 0.2)';
-                    }
-                });
-            } 
-            else if (q.type === 'multi') {
-                isCorrectGlobal = q.answer.every(ans => userSelectionMulti.includes(ans)) && q.answer.length === userSelectionMulti.length;
-                if (isCorrectGlobal) score++;
-                document.querySelectorAll('.option-btn').forEach(btn => {
-                    const optId = q.options.find(o => o.text === btn.innerText).id;
-                    if (q.answer.includes(optId)) {
-                        btn.style.borderColor = 'var(--neon-green)';
-                        btn.style.background = 'rgba(16, 185, 129, 0.2)';
-                        btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓</span>';
-                    } else if (userSelectionMulti.includes(optId) && !q.answer.includes(optId)) {
-                        btn.style.borderColor = 'var(--neon-red)';
-                        btn.style.background = 'rgba(239, 68, 68, 0.2)';
-                    }
-                });
-            }
-            else if (q.type === 'sequence') {
-                let allCorrect = true;
-                document.querySelectorAll('.seq-row').forEach((row, idx) => {
-                    const correctAnswer = q.parts[idx].answer;
-                    const userAnswer = userSelectionSequence[idx];
-                    if (userAnswer !== correctAnswer) allCorrect = false;
-                    
-                    row.querySelectorAll('.option-btn').forEach(btn => {
-                        const optText = btn.innerText.replace(' ✓', '');
-                        const optObj = q.parts[idx].options.find(o => o.text === optText);
-                        if(optObj && optObj.id === correctAnswer) {
-                            btn.style.borderColor = 'var(--neon-green)';
-                            btn.style.background = 'rgba(16, 185, 129, 0.2)';
-                            btn.innerHTML += ' <span style="color:var(--neon-green);">✓</span>';
-                        } else if (optObj && optObj.id === userAnswer && userAnswer !== correctAnswer) {
-                            btn.style.borderColor = 'var(--neon-red)';
-                            btn.style.background = 'rgba(239, 68, 68, 0.2)';
                         }
-                    });
-                });
-                isCorrectGlobal = allCorrect;
-                if(isCorrectGlobal) score++;
-            }
-            else if (q.type === 'fill') {
-                let allCorrect = true;
-                // 注意: 同じ解答番号が複数あっても、それぞれ独立して答えを照合しています
-                document.querySelectorAll('.blank-input').forEach(input => {
-                    const id = input.dataset.id;
-                    const val = input.value.trim();
-                    const correctAnswer = q.answers[id];
-                    if(val === correctAnswer) {
-                        input.classList.add('correct');
-                    } else {
-                        input.classList.add('incorrect');
-                        allCorrect = false;
-                        const label = document.createElement('span');
-                        label.className = 'correct-answer-label';
-                        label.innerText = `(${correctAnswer})`;
-                        input.parentNode.insertBefore(label, input.nextSibling);
                     }
-                    input.readOnly = true;
+                    actionBtn.disabled = (userSelectionMulti.length !== q.req);
+                };
+                oArea.appendChild(btn);
+            });
+            kbHint.innerHTML = '数字キー <kbd>1</kbd>〜<kbd>' + q.options.length + '</kbd> でトグル選択　<kbd>Enter</kbd> で解答';
+        } else if (q.type === 'sequence') {
+            q.parts.forEach((part, pIdx) => {
+                const row = document.createElement('div');
+                row.className = 'seq-row';
+                row.innerHTML = `<span class="seq-label">${part.label}</span>`;
+                const grp = document.createElement('div');
+                grp.className = 'seq-btn-group';
+                part.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.style.flex        = '1';
+                    btn.style.textAlign   = 'center';
+                    btn.innerText         = opt.text;
+                    btn.dataset.optId     = opt.id;
+                    btn.onclick = () => {
+                        if (isAnswerRevealed) return;
+                        playSound('click');
+                        grp.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        userSelectionSequence[pIdx] = opt.id;
+                        actionBtn.disabled = Object.keys(userSelectionSequence).length !== q.parts.length;
+                    };
+                    grp.appendChild(btn);
                 });
-                isCorrectGlobal = allCorrect;
-                if(isCorrectGlobal) score++;
-            }
-            else if (q.type === 'drag-fill') {
-                let allCorrect = true;
-                document.querySelectorAll('.drop-zone').forEach(zone => {
-                    const id = zone.dataset.id;
-                    const correctAnswer = q.answers[id];
-                    const item = zone.firstChild;
-                    const val = item ? item.dataset.val : null;
-                    
-                    if(val === correctAnswer) {
-                        zone.classList.add('correct');
-                    } else {
-                        zone.classList.add('incorrect');
-                        allCorrect = false;
-                        const label = document.createElement('span');
-                        label.className = 'correct-answer-label';
-                        label.innerText = `(${correctAnswer})`;
-                        zone.parentNode.insertBefore(label, zone.nextSibling);
-                    }
-                    if(item) item.draggable = false;
-                });
-                isCorrectGlobal = allCorrect;
-                if(isCorrectGlobal) score++;
-            }
-
-            if(isCorrectGlobal) playSound('correct');
-            else playSound('incorrect');
+                row.appendChild(grp);
+                oArea.appendChild(row);
+            });
+            kbHint.innerHTML = '<kbd>Enter</kbd> で解答';
         }
+    }
+
+    // =====================================================
+    //  ドラッグ＆ドロップ処理（デスクトップ）
+    // =====================================================
+    function allowDrop(ev) {
+        ev.preventDefault();
+        if (ev.target.classList.contains('drop-zone')) ev.target.classList.add('drag-over');
+    }
+    function dragLeave(ev) {
+        if (ev.target.classList.contains('drop-zone')) ev.target.classList.remove('drag-over');
+    }
+    function drag(ev) {
+        if (isAnswerRevealed) return;
+        ev.dataTransfer.setData('text', ev.target.id);
+    }
+    function drop(ev) {
+        ev.preventDefault();
+        if (isAnswerRevealed) return;
+        let target = ev.target;
+        if (target.classList.contains('drag-over')) target.classList.remove('drag-over');
+        if (target.classList.contains('draggable-item')) target = target.parentNode;
+        const data = ev.dataTransfer.getData('text');
+        const draggedEl = document.getElementById(data);
+        if (!draggedEl) return;
+        if (target.classList.contains('drop-zone')) {
+            if (target.hasChildNodes()) document.getElementById('word-bank').appendChild(target.firstChild);
+            target.appendChild(draggedEl);
+            playSound('drop');
+        } else if (target.id === 'word-bank' || target.classList.contains('word-bank')) {
+            document.getElementById('word-bank').appendChild(draggedEl);
+            playSound('drop');
+        }
+        checkDragSubmit();
+    }
+
+    // =====================================================
+    //  ドラッグ＆ドロップ処理（タッチ）
+    // =====================================================
+    let dragGhost = null, activeDragEl = null, touchOffsetX = 0, touchOffsetY = 0;
+    function handleTouchStart(e) {
+        if (isAnswerRevealed) return;
+        activeDragEl = e.target;
+        const touch = e.touches[0];
+        const rect  = activeDragEl.getBoundingClientRect();
+        dragGhost = activeDragEl.cloneNode(true);
+        Object.assign(dragGhost.style, {
+            position: 'fixed', left: rect.left + 'px', top: rect.top + 'px',
+            width: rect.width + 'px', height: rect.height + 'px',
+            opacity: '0.8', zIndex: '9999', pointerEvents: 'none', margin: '0'
+        });
+        document.body.appendChild(dragGhost);
+        activeDragEl.style.opacity = '0.3';
+        touchOffsetX = touch.clientX - rect.left;
+        touchOffsetY = touch.clientY - rect.top;
+        playSound('click');
+    }
+    function handleTouchMove(e) {
+        if (!dragGhost) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        dragGhost.style.left = (touch.clientX - touchOffsetX) + 'px';
+        dragGhost.style.top  = (touch.clientY - touchOffsetY)  + 'px';
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
+        if (target && target.classList.contains('drop-zone')) target.classList.add('drag-over');
+    }
+    function handleTouchEnd(e) {
+        if (!dragGhost || !activeDragEl) return;
+        const touch = e.changedTouches[0];
+        dragGhost.remove(); dragGhost = null;
+        activeDragEl.style.opacity = '1';
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
+        if (target) {
+            let dropTarget = target;
+            if (dropTarget.classList.contains('draggable-item')) dropTarget = dropTarget.parentNode;
+            if (dropTarget.classList.contains('drop-zone')) {
+                if (dropTarget.hasChildNodes()) document.getElementById('word-bank').appendChild(dropTarget.firstChild);
+                dropTarget.appendChild(activeDragEl);
+                playSound('drop');
+            } else if (dropTarget.id === 'word-bank' || dropTarget.closest('.word-bank') || dropTarget.closest('#word-bank-area')) {
+                document.getElementById('word-bank').appendChild(activeDragEl);
+                playSound('drop');
+            }
+        }
+        activeDragEl = null;
+        checkDragSubmit();
+    }
+    function checkDragSubmit() {
+        if (currentSession.questions[playQueue[playQueuePos]].type !== 'drag-fill') return;
+        const blanks = document.querySelectorAll('.drop-zone');
+        let allFilled = true;
+        blanks.forEach(b => { if (!b.hasChildNodes()) allFilled = false; });
+        document.getElementById('action-btn').disabled = !allFilled;
+    }
+
+    // =====================================================
+    //  キーボードショートカット
+    // =====================================================
+    document.addEventListener('keydown', e => {
+        // クイズ画面以外は無視
+        if (!document.getElementById('view-quiz').classList.contains('active')) return;
+
+        const actionBtn = document.getElementById('action-btn');
+        const q = currentSession && playQueue.length ? currentSession.questions[playQueue[playQueuePos]] : null;
+        if (!q) return;
+
+        // Enter で 解答する / 次の問題
+        if (e.key === 'Enter') {
+            // essay は Shift+Enter を改行に使うため Shift なしのみ
+            if (q.type === 'essay' && e.shiftKey) return;
+            if (!actionBtn.disabled && actionBtn.style.display !== 'none') {
+                e.preventDefault();
+                handleAction();
+            }
+            return;
+        }
+
+        // 数字キーで選択肢選択
+        if (isAnswerRevealed) return;
+        const num = parseInt(e.key);
+        if (isNaN(num) || num < 1) return;
+
+        if (q.type === 'single') {
+            const btns = document.querySelectorAll('#options-area .option-btn');
+            if (btns[num - 1]) btns[num - 1].click();
+        } else if (q.type === 'multi') {
+            const btns = document.querySelectorAll('#options-area .option-btn');
+            if (btns[num - 1]) btns[num - 1].click();
+        }
+    });
+
+    // =====================================================
+    //  解答・採点処理
+    // =====================================================
+    function handleAction() {
+        if (isWaitingForSelfGrade) return;
+        playSound('click');
+
+        if (!isAnswerRevealed) {
+            checkAnswer();
+        } else {
+            playQueuePos++;
+            if (playQueuePos < playQueue.length) {
+                renderQuestion();
+            } else {
+                // 全問終了
+                const total = playQueue.length;
+                saveLastScore(currentDbIndex, score, total);
+                initApp(); // メニューのバッジを更新
+                showResultScreen(total);
+            }
+        }
+    }
+
+    function submitSelfGrade(points, btn) {
+        const qIdx = playQueue[playQueuePos];
+        const mark = points >= 1 ? 'correct' : points > 0 ? 'partial' : 'incorrect';
+        sessionResults[currentDbIndex][qIdx] = { mark, score: points };
+        score += points;
+        isWaitingForSelfGrade = false;
+        isAnswerRevealed = true;
+
+        document.querySelectorAll('.grade-btn').forEach(b => b.style.opacity = '0.4');
+        btn.style.opacity   = '1';
+        btn.style.transform = 'scale(1.05)';
+
+        const actionBtn = document.getElementById('action-btn');
+        actionBtn.style.display = 'block';
+        actionBtn.innerText     = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '結果を見る';
+        // 進捗バーを解答後に更新
+        updateProgressBar();
+        playSound(mark === 'correct' ? 'correct' : 'incorrect');
+    }
+
+    function checkAnswer() {
+        const q         = currentSession.questions[playQueue[playQueuePos]];
+        const qIdx      = playQueue[playQueuePos];
+        const actionBtn = document.getElementById('action-btn');
+
+        if (q.type === 'essay') {
+            isWaitingForSelfGrade = true;
+            actionBtn.style.display = 'none';
+            document.getElementById('essay-sample-text').innerHTML = q.sampleAnswer.replace(/\n/g, '<br>');
+            document.getElementById('essay-sample-area').style.display = 'block';
+            document.querySelector('.essay-textarea').readOnly = true;
+            return;
+        }
+
+        isAnswerRevealed    = true;
+        actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '結果を見る';
+        updateProgressBar();
+
+        let isCorrectGlobal = true;
+
+        if (q.type === 'single') {
+            isCorrectGlobal = (userSelectionSingle === q.answer);
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                const optId = btn.dataset.optId;
+                if (optId === q.answer) {
+                    btn.style.borderColor  = 'var(--neon-green)';
+                    btn.style.background   = 'rgba(16, 185, 129, 0.2)';
+                    btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓ 正解</span>';
+                } else if (optId === userSelectionSingle && !isCorrectGlobal) {
+                    btn.style.borderColor = 'var(--neon-red)';
+                    btn.style.background  = 'rgba(239, 68, 68, 0.2)';
+                }
+            });
+        } else if (q.type === 'multi') {
+            isCorrectGlobal = q.answer.every(a => userSelectionMulti.includes(a)) && q.answer.length === userSelectionMulti.length;
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                const optId = btn.dataset.optId;
+                if (q.answer.includes(optId)) {
+                    btn.style.borderColor = 'var(--neon-green)';
+                    btn.style.background  = 'rgba(16, 185, 129, 0.2)';
+                    btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓</span>';
+                } else if (userSelectionMulti.includes(optId)) {
+                    btn.style.borderColor = 'var(--neon-red)';
+                    btn.style.background  = 'rgba(239, 68, 68, 0.2)';
+                }
+            });
+        } else if (q.type === 'sequence') {
+            let allCorrect = true;
+            document.querySelectorAll('.seq-row').forEach((row, idx) => {
+                const correctAns = q.parts[idx].answer;
+                const userAns    = userSelectionSequence[idx];
+                if (userAns !== correctAns) allCorrect = false;
+                row.querySelectorAll('.option-btn').forEach(btn => {
+                    const optId = btn.dataset.optId;
+                    if (optId === correctAns) {
+                        btn.style.borderColor = 'var(--neon-green)';
+                        btn.style.background  = 'rgba(16, 185, 129, 0.2)';
+                        btn.innerHTML += ' <span style="color:var(--neon-green);">✓</span>';
+                    } else if (optId === userAns && userAns !== correctAns) {
+                        btn.style.borderColor = 'var(--neon-red)';
+                        btn.style.background  = 'rgba(239, 68, 68, 0.2)';
+                    }
+                });
+            });
+            isCorrectGlobal = allCorrect;
+        } else if (q.type === 'fill') {
+            let allCorrect = true;
+            document.querySelectorAll('.blank-input').forEach(input => {
+                const id          = input.dataset.id;
+                const val         = input.value.trim();
+                const correctAnswer = q.answers[id];
+                if (val === correctAnswer) {
+                    input.classList.add('correct');
+                } else {
+                    input.classList.add('incorrect');
+                    allCorrect = false;
+                    const label = document.createElement('span');
+                    label.className = 'correct-answer-label';
+                    label.innerText = `(${correctAnswer})`;
+                    input.parentNode.insertBefore(label, input.nextSibling);
+                }
+                input.readOnly = true;
+            });
+            isCorrectGlobal = allCorrect;
+        } else if (q.type === 'drag-fill') {
+            let allCorrect = true;
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                const id            = zone.dataset.id;
+                const correctAnswer = q.answers[id];
+                const item          = zone.firstChild;
+                const val           = item ? item.dataset.val : null;
+                if (val === correctAnswer) {
+                    zone.classList.add('correct');
+                } else {
+                    zone.classList.add('incorrect');
+                    allCorrect = false;
+                    const label = document.createElement('span');
+                    label.className = 'correct-answer-label';
+                    label.innerText = `(${correctAnswer})`;
+                    zone.parentNode.insertBefore(label, zone.nextSibling);
+                }
+                if (item) item.draggable = false;
+            });
+            isCorrectGlobal = allCorrect;
+        }
+
+        // 正誤記録
+        const mark = isCorrectGlobal ? 'correct' : 'incorrect';
+        sessionResults[currentDbIndex][qIdx] = { mark, score: isCorrectGlobal ? 1 : 0 };
+        if (isCorrectGlobal) score++;
+
+        // サウンド
+        playSound(isCorrectGlobal ? 'correct' : 'incorrect');
+
+        // 解説表示
+        if (q.explanation) {
+            const panel = document.getElementById('explanation-panel');
+            document.getElementById('explanation-text').innerHTML = q.explanation.replace(/\n/g, '<br>');
+            panel.style.display = 'block';
+        }
+    }
+
+    // 進捗バーを解答後に更新（＋ハイライト）
+    function updateProgressBar() {
+        const pct = Math.round(((playQueuePos + 1) / playQueue.length) * 100);
+        document.getElementById('progress-bar').style.width = pct + '%';
+    }
+
+    // =====================================================
+    //  結果画面
+    // =====================================================
+    function showResultScreen(total) {
+        playSound('complete');
+
+        const pct = total > 0 ? score / total : 0;
+        document.getElementById('final-score').innerText = `${score} / ${total}`;
+
+        // メッセージ
+        const msgEl = document.getElementById('score-message');
+        if (pct >= 1)       { msgEl.style.color = 'var(--neon-green)';  msgEl.innerText = '🎉 パーフェクト！素晴らしい！'; }
+        else if (pct >= 0.8){ msgEl.style.color = 'var(--neon-blue)';   msgEl.innerText = '👍 よくできました！'; }
+        else if (pct >= 0.5){ msgEl.style.color = 'var(--neon-yellow)'; msgEl.innerText = '📚 もう少し！復習を続けよう。'; }
+        else                { msgEl.style.color = 'var(--neon-red)';    msgEl.innerText = '💪 復習が必要です。再挑戦しよう！'; }
+
+        // サマリーカウント
+        const results = sessionResults[currentDbIndex];
+        let cCorrect = 0, cPartial = 0, cIncorrect = 0;
+        playQueue.forEach(qi => {
+            const r = results[qi];
+            if (!r) return;
+            if (r.mark === 'correct')   cCorrect++;
+            else if (r.mark === 'partial')  cPartial++;
+            else                            cIncorrect++;
+        });
+        document.getElementById('result-summary-bar').innerHTML = `
+            <div class="result-stat s-correct">
+                <div class="stat-num">${cCorrect}</div>
+                <div class="stat-label">正解</div>
+            </div>
+            <div style="color:var(--text-muted); font-size:2rem; align-self:center;">/</div>
+            <div class="result-stat s-partial">
+                <div class="stat-num" style="color:var(--neon-yellow);">${cPartial}</div>
+                <div class="stat-label">部分点</div>
+            </div>
+            <div style="color:var(--text-muted); font-size:2rem; align-self:center;">/</div>
+            <div class="result-stat s-incorrect">
+                <div class="stat-num" style="color:var(--neon-red);">${cIncorrect}</div>
+                <div class="stat-label">不正解</div>
+            </div>
+        `;
+
+        // 詳細テーブル
+        const tbody = document.getElementById('result-detail-body');
+        tbody.innerHTML = '';
+        playQueue.forEach((qi, pos) => {
+            const q   = currentSession.questions[qi];
+            const res = results[qi];
+            const mark = res ? res.mark : null;
+            let icon = '—', cls = '';
+            if (mark === 'correct')   { icon = '○'; cls = 'ci'; }
+            else if (mark === 'partial') { icon = '△'; cls = 'cp'; }
+            else if (mark === 'incorrect'){ icon = '✗'; cls = 'cx'; }
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="color:var(--text-muted);">${pos + 1}</td>
+                <td>${q.title || `第 ${qi + 1} 問`}</td>
+                <td class="result-mark-cell"><span class="mark-icon ${cls}">${icon}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        switchView('view-result');
+    }
+
+    // 不正解のみ再挑戦（結果画面から）
+    function retryWrongAnswers() {
+        playSound('click');
+        const results  = sessionResults[currentDbIndex] || {};
+        const wrongIds = playQueue.filter(qi => results[qi] && results[qi].mark === 'incorrect');
+        if (!wrongIds.length) {
+            alert('不正解の問題はありません！');
+            return;
+        }
+        // 問題選択画面へ戻らずそのまま再出題
+        startSpecificQuestion(wrongIds);
+    }
     </script>
 </body>
 </html>
