@@ -197,11 +197,16 @@
             display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 10px;
         }
+
+        /* ===== 問題ボタン ===== */
         .problem-item {
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-main); padding: 10px 8px; border-radius: 8px;
-            text-align: center; cursor: pointer; transition: all 0.2s; font-weight: bold; font-size: 0.9rem;
-            position: relative;
+            text-align: center; cursor: pointer; transition: all 0.2s; font-weight: bold;
+            font-size: 0.85rem; line-height: 1.3;
+            position: relative; min-height: 52px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 2px;
         }
         .problem-item:hover {
             background: rgba(0, 242, 254, 0.1); border-color: var(--neon-blue); transform: translateY(-2px);
@@ -210,6 +215,11 @@
         .problem-item.selected {
             background: rgba(0, 242, 254, 0.18); border-color: var(--neon-blue);
             box-shadow: 0 0 10px rgba(0,242,254,0.25);
+        }
+        /* 問題ボタン内の問番号ラベル（小さいサブテキスト） */
+        .problem-item-sub {
+            font-size: 0.7rem; color: var(--text-muted); font-weight: normal;
+            display: block; line-height: 1.2;
         }
         /* 正誤マーク */
         .problem-item .result-mark {
@@ -250,11 +260,24 @@
 
         /* ===== クイズ領域 ===== */
         .quiz-header {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: flex-end; align-items: center;
             margin-bottom: 10px;
         }
-        .quiz-title-text { color: var(--neon-blue); font-weight: bold; font-size: 1.1rem; }
         .quiz-progress-text { color: var(--neon-purple); font-weight: bold; font-size: 1rem; }
+
+        /* 問題番号インライン表示 */
+        .question-number-label {
+            display: inline-block;
+            background: rgba(0, 242, 254, 0.12);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            border-radius: 8px;
+            padding: 5px 14px;
+            color: var(--neon-blue);
+            font-weight: bold;
+            font-size: 1.0rem;
+            margin-bottom: 14px;
+            letter-spacing: 0.5px;
+        }
 
         .question-text { font-size: 1.15rem; line-height: 1.9; margin-bottom: 30px; }
 
@@ -542,8 +565,8 @@
                     <div class="progress-bar-fill" id="progress-bar" style="width: 0%;"></div>
                 </div>
 
+                <!-- quiz-header: 進捗カウンターのみ表示 -->
                 <div class="quiz-header">
-                    <span class="quiz-title-text" id="quiz-title"></span>
                     <span class="quiz-progress-text" id="quiz-progress"></span>
                 </div>
 
@@ -553,6 +576,7 @@
                     <div id="word-bank" class="word-bank" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)"></div>
                 </div>
 
+                <!-- 問題番号ラベル＋問題文エリア（問題番号をここに表示） -->
                 <div id="question-area" class="question-text"></div>
                 <div id="options-area" class="options-grid"></div>
 
@@ -863,6 +887,35 @@
         return groups;
     }
 
+    // =====================================================
+    //  問題ボタンの表示ラベルを取得
+    // =====================================================
+    /**
+     * 問題ボタンに表示するテキストを返す。
+     * - q.title があればそれをメインラベルとして使用
+     * - q.title がなければ「問N」形式（1始まり）
+     *
+     * 大問グループ内での順番（groupPos：0始まり）を参照して
+     * 「問1」「問2」…のような連番を生成する。
+     * また、セッション内での全体通し番号（globalIdx + 1）も
+     * サブテキストとして表示する（title がある場合のみ）。
+     */
+    function getProblemButtonLabel(q, globalIdx, groupPos) {
+        if (q.title && q.title.trim() !== '') {
+            // title がある場合はそのまま表示（通し番号はサブテキスト）
+            return {
+                main: q.title,
+                sub: `第 ${globalIdx + 1} 問`
+            };
+        } else {
+            // title がない場合は「問N」形式（グループ内連番）
+            return {
+                main: `問 ${groupPos + 1}`,
+                sub: null
+            };
+        }
+    }
+
     function renderProblemContainer(filter) {
         const container = document.getElementById('problem-container');
         container.innerHTML = '';
@@ -930,10 +983,13 @@
             const grid = document.createElement('div');
             grid.className = 'problem-grid';
 
-            visibleIndices.forEach(idx => {
+            visibleIndices.forEach((idx, groupPos) => {
                 const q   = allQuestions[idx];
                 const res = results[idx];
                 const mark = res ? res.mark : null;
+
+                // ===== 変更1: 問題ボタンの表示ラベルをデータに合わせる =====
+                const labelInfo = getProblemButtonLabel(q, idx, groupPos);
 
                 const btn = document.createElement('div');
                 btn.className = 'problem-item';
@@ -941,11 +997,19 @@
                 if (mark) btn.classList.add(`answered-${mark}`);
                 if (selectedQuestionSet.has(idx)) btn.classList.add('selected');
 
-                btn.innerHTML = `第 ${idx + 1} 問`;
+                // メインラベル
+                let innerHtml = `<span>${labelInfo.main}</span>`;
+                // サブテキスト（title がある場合に通し番号を小さく表示）
+                if (labelInfo.sub) {
+                    innerHtml += `<span class="problem-item-sub">${labelInfo.sub}</span>`;
+                }
+                // 正誤マーク
                 if (mark) {
                     const icon = mark === 'correct' ? '○' : mark === 'partial' ? '△' : '✗';
-                    btn.innerHTML += `<span class="result-mark mark-${mark}">${icon}</span>`;
+                    innerHtml += `<span class="result-mark mark-${mark}">${icon}</span>`;
                 }
+                btn.innerHTML = innerHtml;
+
                 btn.onclick = (e) => {
                     e.stopPropagation();
                     playSound('click');
@@ -1159,7 +1223,7 @@
         const pct = Math.round((playQueuePos / playQueue.length) * 100);
         document.getElementById('progress-bar').style.width = pct + '%';
 
-        document.getElementById('quiz-title').innerText   = q.title || `第 ${playQueue[playQueuePos] + 1} 問`;
+        // ===== 変更2: 進捗カウンターのみ更新（問題番号は question-area 内に表示） =====
         document.getElementById('quiz-progress').innerText = `${playQueuePos + 1} / ${playQueue.length}`;
 
         const qArea     = document.getElementById('question-area');
@@ -1182,9 +1246,12 @@
         actionBtn.disabled      = false; // ← 常に有効（未入力でも進める）
         kbHint.innerHTML = '';
 
+        // ===== 変更2: 問題番号ラベルを question-area の先頭に挿入 =====
+        const questionLabel = q.title || `第 ${playQueue[playQueuePos] + 1} 問`;
+        const labelHtml = `<div class="question-number-label">${questionLabel}</div>`;
+
         if (q.type === 'single' || q.type === 'multi' || q.type === 'sequence') {
-            qArea.innerHTML = q.text.replace(/\n/g, '<br>');
-            // ※ 未選択でも解答可能にするため disabled にしない
+            qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>');
         } else if (q.type === 'fill') {
             // [[id]] を入力欄に変換（番号ヒント付き）
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
@@ -1193,7 +1260,7 @@
                     `<input type="text" class="blank-input" data-id="${p1}" placeholder="${p1}" autocomplete="off">` +
                 `</span>`
             );
-            qArea.innerHTML = formattedText;
+            qArea.innerHTML = labelHtml + formattedText;
             // 同期 & Enterキーで解答
             qArea.querySelectorAll('.blank-input').forEach(inp => {
                 inp.addEventListener('input', () => {
@@ -1211,7 +1278,7 @@
                     `<span class="drop-zone" data-id="${p1}" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)"></span>` +
                 `</span>`
             );
-            qArea.innerHTML = formattedText;
+            qArea.innerHTML = labelHtml + formattedText;
 
             // 語群リスト（ランダム設定対応）
             let words = quizSettings.randomWords
@@ -1231,7 +1298,7 @@
                 wBank.appendChild(div);
             });
         } else if (q.type === 'essay') {
-            qArea.innerHTML = q.text.replace(/\n/g, '<br>') +
+            qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>') +
                 `<textarea class="essay-textarea" placeholder="ここに解答を記述してください..."></textarea>`;
             actionBtn.innerText = '解答例を確認する';
             kbHint.innerHTML = '<kbd>Enter</kbd> で解答確認 （Shift+Enterで改行）';
