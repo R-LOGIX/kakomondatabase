@@ -165,5 +165,3 @@ const database2 = [
         ]
     }
 ];
-
-export default database2;
