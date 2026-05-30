@@ -484,6 +484,16 @@
             100% { transform: scale(1); opacity: 1; }
         }
         .pop-in { animation: popIn 0.4s cubic-bezier(0.4,0,0.2,1); }
+
+        /* ===== タッチドラッグ中のゴースト ===== */
+        #touch-drag-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.85;
+            transform: scale(1.08);
+            transition: none;
+        }
     </style>
 </head>
 <body onload="initApp()">
@@ -678,20 +688,66 @@
         osc.start(audioCtx.currentTime + delay);
         osc.stop(audioCtx.currentTime + delay + duration);
     }
+
+    /**
+     * 効果音の種類:
+     *  correct    - 正解（明るい上昇音）
+     *  incorrect  - 不正解（低めの不協和音）
+     *  partial    - 部分点（中間的な音）
+     *  drop       - ドロップ（短いポップ音）
+     *  click      - クリック（短い高音）
+     *  complete   - 完了（ファンファーレ風）
+     *  select     - 問題ボタン選択（軽いクリック）
+     *  start      - 出題開始（上昇アルペジオ）
+     *  next       - 次の問題へ（短い遷移音）
+     */
     function playSound(type) {
         initAudio();
-        if (type === 'correct') {
-            playTone(600, 'sine', 0.1, 0.1);
-            playTone(800, 'sine', 0.2, 0.1, 0.1);
-        } else if (type === 'incorrect') {
-            playTone(300, 'sawtooth', 0.2, 0.1);
-            playTone(250, 'sawtooth', 0.3, 0.1, 0.15);
-        } else if (type === 'drop') {
-            playTone(400, 'sine', 0.1, 0.05);
-        } else if (type === 'click') {
-            playTone(500, 'sine', 0.05, 0.05);
-        } else if (type === 'complete') {
-            [0, 0.12, 0.24].forEach((d, i) => playTone(500 + i * 150, 'sine', 0.25, 0.12, d));
+        switch (type) {
+            case 'correct':
+                // 明るく上昇する2音
+                playTone(600, 'sine', 0.12, 0.12);
+                playTone(900, 'sine', 0.22, 0.12, 0.1);
+                break;
+            case 'incorrect':
+                // 重く下降する不協和音
+                playTone(320, 'sawtooth', 0.15, 0.1);
+                playTone(260, 'sawtooth', 0.25, 0.1, 0.12);
+                break;
+            case 'partial':
+                // 中間的な音（やや明るい）
+                playTone(500, 'sine', 0.12, 0.1);
+                playTone(650, 'sine', 0.18, 0.08, 0.1);
+                break;
+            case 'drop':
+                // ドロップ配置音（短いポップ）
+                playTone(480, 'sine', 0.08, 0.07);
+                playTone(600, 'sine', 0.06, 0.05, 0.06);
+                break;
+            case 'click':
+                // UI クリック（軽い短音）
+                playTone(520, 'sine', 0.05, 0.06);
+                break;
+            case 'complete':
+                // 演習完了ファンファーレ（5音アルペジオ）
+                [0, 0.12, 0.24, 0.36, 0.50].forEach((d, i) => {
+                    playTone([440, 550, 660, 770, 880][i], 'sine', 0.3, 0.13, d);
+                });
+                break;
+            case 'select':
+                // 問題ボタン選択（軽いトグル音）
+                playTone(440, 'sine', 0.06, 0.05);
+                break;
+            case 'start':
+                // 出題開始（上昇アルペジオ）
+                playTone(440, 'sine', 0.12, 0.1, 0);
+                playTone(550, 'sine', 0.12, 0.1, 0.08);
+                playTone(660, 'sine', 0.18, 0.12, 0.16);
+                break;
+            case 'next':
+                // 次の問題へ（短い遷移音）
+                playTone(480, 'sine', 0.08, 0.08);
+                break;
         }
     }
 
@@ -855,6 +911,7 @@
 
     let currentProblemTab = 'all';
     function switchProblemTab(tab) {
+        playSound('click');
         currentProblemTab = tab;
         ['all', 'wrong', 'unanswered'].forEach(t => {
             document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
@@ -865,17 +922,11 @@
     // =====================================================
     //  大問グループの構築
     // =====================================================
-    /**
-     * questions 配列を大問ごとにグルーピング。
-     * 各問題に majorGroup プロパティがあればそれを使用。
-     * なければ連番を「大問 N」として自動グルーピング（5問ずつ）。
-     */
     function buildMajorGroups(questions) {
         const groups = [];
         const groupMap = {};
 
         questions.forEach((q, idx) => {
-            // majorGroup があればそれ優先、なければ "大問 N" に自動割り当て
             const gKey = q.majorGroup != null ? String(q.majorGroup) : `大問 ${Math.floor(idx / 5) + 1}`;
             if (!groupMap[gKey]) {
                 groupMap[gKey] = { label: gKey, indices: [] };
@@ -890,25 +941,13 @@
     // =====================================================
     //  問題ボタンの表示ラベルを取得
     // =====================================================
-    /**
-     * 問題ボタンに表示するテキストを返す。
-     * - q.title があればそれをメインラベルとして使用
-     * - q.title がなければ「問N」形式（1始まり）
-     *
-     * 大問グループ内での順番（groupPos：0始まり）を参照して
-     * 「問1」「問2」…のような連番を生成する。
-     * また、セッション内での全体通し番号（globalIdx + 1）も
-     * サブテキストとして表示する（title がある場合のみ）。
-     */
     function getProblemButtonLabel(q, globalIdx, groupPos) {
         if (q.title && q.title.trim() !== '') {
-            // title がある場合はそのまま表示（通し番号はサブテキスト）
             return {
                 main: q.title,
                 sub: `第 ${globalIdx + 1} 問`
             };
         } else {
-            // title がない場合は「問N」形式（グループ内連番）
             return {
                 main: `問 ${groupPos + 1}`,
                 sub: null
@@ -922,7 +961,6 @@
         const results = sessionResults[currentDbIndex] || {};
         const allQuestions = currentSession.questions;
 
-        // フィルタリング済みの全インデックス
         const filteredIndices = allQuestions.map((q, i) => i).filter(i => {
             const mark = results[i] ? results[i].mark : null;
             if (filter === 'wrong'      && mark !== 'incorrect') return false;
@@ -938,18 +976,15 @@
             return;
         }
 
-        // 大問グループ作成
         const groups = buildMajorGroups(allQuestions);
 
         groups.forEach((group, gIdx) => {
-            // このグループ内でフィルタ通過する問題のみ
             const visibleIndices = group.indices.filter(i => filteredIndices.includes(i));
             if (!visibleIndices.length) return;
 
             const section = document.createElement('div');
             section.className = 'major-q-section';
 
-            // --- ヘッダー ---
             const header = document.createElement('div');
             header.className = 'major-q-header';
             header.dataset.gidx = gIdx;
@@ -975,7 +1010,6 @@
             header.appendChild(meta);
             header.appendChild(arrow);
 
-            // --- ボディ ---
             const body = document.createElement('div');
             body.className = 'major-q-body';
             body.id = `major-body-${gIdx}`;
@@ -988,7 +1022,6 @@
                 const res = results[idx];
                 const mark = res ? res.mark : null;
 
-                // ===== 変更1: 問題ボタンの表示ラベルをデータに合わせる =====
                 const labelInfo = getProblemButtonLabel(q, idx, groupPos);
 
                 const btn = document.createElement('div');
@@ -997,13 +1030,10 @@
                 if (mark) btn.classList.add(`answered-${mark}`);
                 if (selectedQuestionSet.has(idx)) btn.classList.add('selected');
 
-                // メインラベル
                 let innerHtml = `<span>${labelInfo.main}</span>`;
-                // サブテキスト（title がある場合に通し番号を小さく表示）
                 if (labelInfo.sub) {
                     innerHtml += `<span class="problem-item-sub">${labelInfo.sub}</span>`;
                 }
-                // 正誤マーク
                 if (mark) {
                     const icon = mark === 'correct' ? '○' : mark === 'partial' ? '△' : '✗';
                     innerHtml += `<span class="result-mark mark-${mark}">${icon}</span>`;
@@ -1012,7 +1042,7 @@
 
                 btn.onclick = (e) => {
                     e.stopPropagation();
-                    playSound('click');
+                    playSound('select');
                     toggleQuestionSelect(idx, gIdx, visibleIndices, false);
                 };
                 grid.appendChild(btn);
@@ -1025,6 +1055,7 @@
                 const isOpen = body.classList.contains('open');
                 body.classList.toggle('open', !isOpen);
                 header.classList.toggle('open', !isOpen);
+                playSound('click');
             });
 
             // チェックボックスクリック：大問ごと全選択
@@ -1046,7 +1077,6 @@
             section.appendChild(body);
             container.appendChild(section);
 
-            // チェックボックス初期状態
             updateMajorCheckbox(gIdx, visibleIndices);
         });
 
@@ -1059,7 +1089,6 @@
         } else {
             selectedQuestionSet.add(idx);
         }
-        // 個別ボタン
         const btn = document.getElementById(`pitem-${idx}`);
         if (btn) btn.classList.toggle('selected', selectedQuestionSet.has(idx));
         updateMajorCheckbox(gIdx, groupIndices);
@@ -1103,7 +1132,6 @@
         } else {
             filteredIndices.forEach(i => selectedQuestionSet.delete(i));
         }
-        // UIを再描画
         renderProblemContainer(currentProblemTab);
     }
 
@@ -1116,7 +1144,6 @@
     //  出題開始
     // =====================================================
     function startSelectedQuestions() {
-        playSound('click');
         if (!selectedQuestionSet.size) {
             alert('問題を選択してください。');
             return;
@@ -1125,10 +1152,10 @@
         if (quizSettings.randomOrder) {
             indices = [...indices].sort(() => Math.random() - 0.5);
         }
+        playSound('start');
         startSpecificQuestion(indices);
     }
 
-    // 旧来の互換API（結果画面の「不正解再挑戦」等から使用）
     function startFilteredQuiz(mode) {
         playSound('click');
         const results = sessionResults[currentDbIndex] || {};
@@ -1142,6 +1169,7 @@
         } else if (quizSettings.randomOrder) {
             indices = [...indices].sort(() => Math.random() - 0.5);
         }
+        playSound('start');
         startSpecificQuestion(indices);
     }
 
@@ -1171,37 +1199,9 @@
     // =====================================================
     //  同一番号解答欄の同期
     // =====================================================
-    /**
-     * fill タイプ：同じ data-id を持つ全 input を同期する
-     * drag-fill タイプ：同じ data-id を持つ全 drop-zone を同期する
-     *
-     * この関数は input イベント / drop イベント後に呼ぶ。
-     */
     function syncSameIdInputs(changedId, newValue) {
-        // fill の同名入力欄
         document.querySelectorAll(`.blank-input[data-id="${changedId}"]`).forEach(inp => {
             if (inp.value !== newValue) inp.value = newValue;
-        });
-    }
-
-    function syncSameIdDropZones(changedId, sourceZone) {
-        // drag-fill の同名ドロップゾーン（変更元以外）
-        document.querySelectorAll(`.drop-zone[data-id="${changedId}"]`).forEach(zone => {
-            if (zone === sourceZone) return;
-            // 現在の中身を語群へ返す
-            if (zone.hasChildNodes()) {
-                document.getElementById('word-bank').appendChild(zone.firstChild);
-            }
-            // 変更元のクローンを配置（実アイテムではなく見た目だけ同期）
-            const srcItem = sourceZone.firstChild;
-            if (srcItem) {
-                const clone = srcItem.cloneNode(true);
-                // クローンはドラッグ不可（ゴーストとして表示）
-                clone.draggable = false;
-                clone.style.opacity = '0.7';
-                clone.style.cursor = 'default';
-                zone.appendChild(clone);
-            }
         });
     }
 
@@ -1210,7 +1210,6 @@
     // =====================================================
     function renderQuestion() {
         const qOrig = currentSession.questions[playQueue[playQueuePos]];
-        // 設定に応じてコピーを作り選択肢をシャッフル
         const q = prepareQuestion(qOrig);
 
         isAnswerRevealed      = false;
@@ -1219,11 +1218,8 @@
         userSelectionMulti    = [];
         userSelectionSequence = {};
 
-        // 進捗バー更新
         const pct = Math.round((playQueuePos / playQueue.length) * 100);
         document.getElementById('progress-bar').style.width = pct + '%';
-
-        // ===== 変更2: 進捗カウンターのみ更新（問題番号は question-area 内に表示） =====
         document.getElementById('quiz-progress').innerText = `${playQueuePos + 1} / ${playQueue.length}`;
 
         const qArea     = document.getElementById('question-area');
@@ -1243,17 +1239,15 @@
         document.getElementById('explanation-text').innerHTML = '';
         actionBtn.style.display = 'block';
         actionBtn.innerText     = '解答する';
-        actionBtn.disabled      = false; // ← 常に有効（未入力でも進める）
+        actionBtn.disabled      = false;
         kbHint.innerHTML = '';
 
-        // ===== 変更2: 問題番号ラベルを question-area の先頭に挿入 =====
         const questionLabel = q.title || `第 ${playQueue[playQueuePos] + 1} 問`;
         const labelHtml = `<div class="question-number-label">${questionLabel}</div>`;
 
         if (q.type === 'single' || q.type === 'multi' || q.type === 'sequence') {
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>');
         } else if (q.type === 'fill') {
-            // [[id]] を入力欄に変換（番号ヒント付き）
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
                 `<span class="blank-wrap">` +
                     `<span class="blank-num-hint">${p1}</span>` +
@@ -1261,7 +1255,6 @@
                 `</span>`
             );
             qArea.innerHTML = labelHtml + formattedText;
-            // 同期 & Enterキーで解答
             qArea.querySelectorAll('.blank-input').forEach(inp => {
                 inp.addEventListener('input', () => {
                     syncSameIdInputs(inp.dataset.id, inp.value);
@@ -1271,7 +1264,6 @@
             kbHint.innerHTML = '<kbd>Enter</kbd> で解答';
         } else if (q.type === 'drag-fill') {
             wArea.style.display = 'block';
-            // [[id]] をドロップゾーン（番号ヒント付きラッパー）に変換
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
                 `<span class="drop-zone-wrap">` +
                     `<span class="drop-zone-num-hint">${p1}</span>` +
@@ -1280,10 +1272,9 @@
             );
             qArea.innerHTML = labelHtml + formattedText;
 
-            // 語群リスト（ランダム設定対応）
             let words = quizSettings.randomWords
                 ? shuffleArray(q.wordBank)
-                : [...q.wordBank].sort(() => Math.random() - 0.5); // デフォルトはランダム（従来通り）
+                : [...q.wordBank].sort(() => Math.random() - 0.5);
             words.forEach((word, idx) => {
                 const div = document.createElement('div');
                 div.className   = 'draggable-item';
@@ -1291,10 +1282,10 @@
                 div.id          = `drag-item-${idx}`;
                 div.dataset.val = word;
                 div.innerText   = word;
-                div.addEventListener('dragstart',  drag);
+                div.addEventListener('dragstart', drag);
                 div.addEventListener('touchstart', handleTouchStart, { passive: false });
                 div.addEventListener('touchmove',  handleTouchMove,  { passive: false });
-                div.addEventListener('touchend',   handleTouchEnd);
+                div.addEventListener('touchend',   handleTouchEnd,   { passive: false });
                 wBank.appendChild(div);
             });
         } else if (q.type === 'essay') {
@@ -1380,7 +1371,6 @@
     //  問題の前処理（シャッフル等）
     // =====================================================
     function prepareQuestion(q) {
-        // シャローコピーで元データを守る
         return Object.assign({}, q);
     }
 
@@ -1421,32 +1411,26 @@
             if (target.hasChildNodes()) document.getElementById('word-bank').appendChild(target.firstChild);
             target.appendChild(draggedEl);
             playSound('drop');
-            // 同一番号の他のドロップゾーンを同期
             syncSameIdDropZoneAfterDrop(target);
         } else if (target.id === 'word-bank' || target.classList.contains('word-bank')) {
             document.getElementById('word-bank').appendChild(draggedEl);
             playSound('drop');
         }
-        checkDragSubmit();
     }
 
     function syncSameIdDropZoneAfterDrop(changedZone) {
         const id = changedZone.dataset.id;
         if (!id) return;
-        // 同じIDを持つ他のドロップゾーンすべてを同期
         document.querySelectorAll(`.drop-zone[data-id="${id}"]`).forEach(zone => {
             if (zone === changedZone) return;
-            // 既存中身を語群へ返す
             if (zone.hasChildNodes()) {
                 const child = zone.firstChild;
-                // クローンならそのまま削除
                 if (child.dataset && !child.id) {
                     child.remove();
                 } else {
                     document.getElementById('word-bank').appendChild(child);
                 }
             }
-            // 変更元と同じ値のクローンを表示
             const srcItem = changedZone.firstChild;
             if (srcItem) {
                 const clone = srcItem.cloneNode(true);
@@ -1461,65 +1445,163 @@
 
     // =====================================================
     //  ドラッグ＆ドロップ処理（タッチ）
+    //  修正: スクロールと共存できるよう auto-scroll を実装
+    //        ゴーストを body 直下の fixed 要素として管理
     // =====================================================
-    let dragGhost = null, activeDragEl = null, touchOffsetX = 0, touchOffsetY = 0;
+    let touchDragGhost  = null;   // ゴースト要素
+    let touchDragSrc    = null;   // ドラッグ元の実要素
+    let touchOffsetX    = 0;
+    let touchOffsetY    = 0;
+    let touchAutoScrollTimer = null;  // 自動スクロール用タイマー
+    const SCROLL_ZONE   = 80;    // 画面端からこのpx以内で自動スクロール
+    const SCROLL_SPEED  = 8;     // 自動スクロールの速度(px/frame)
+
     function handleTouchStart(e) {
         if (isAnswerRevealed) return;
-        activeDragEl = e.target;
+        // シングルタッチのみ処理
+        if (e.touches.length !== 1) return;
+        e.preventDefault();
+
+        touchDragSrc = e.currentTarget;
         const touch = e.touches[0];
-        const rect  = activeDragEl.getBoundingClientRect();
-        dragGhost = activeDragEl.cloneNode(true);
-        Object.assign(dragGhost.style, {
-            position: 'fixed', left: rect.left + 'px', top: rect.top + 'px',
-            width: rect.width + 'px', height: rect.height + 'px',
-            opacity: '0.8', zIndex: '9999', pointerEvents: 'none', margin: '0'
+        const rect  = touchDragSrc.getBoundingClientRect();
+
+        // ゴーストを作成して body 直下に追加
+        touchDragGhost = touchDragSrc.cloneNode(true);
+        touchDragGhost.id = 'touch-drag-ghost';
+        touchDragGhost.removeAttribute('data-val'); // 採点に使われないようにする
+        Object.assign(touchDragGhost.style, {
+            position:      'fixed',
+            left:          rect.left + 'px',
+            top:           rect.top  + 'px',
+            width:         rect.width  + 'px',
+            height:        rect.height + 'px',
+            margin:        '0',
+            zIndex:        '9999',
+            pointerEvents: 'none',
+            opacity:       '0.85',
+            transform:     'scale(1.08)',
+            transition:    'none',
+            boxShadow:     '0 8px 24px rgba(0,242,254,0.4)'
         });
-        document.body.appendChild(dragGhost);
-        activeDragEl.style.opacity = '0.3';
+        document.body.appendChild(touchDragGhost);
+
+        // 元要素を半透明に
+        touchDragSrc.style.opacity = '0.3';
+
         touchOffsetX = touch.clientX - rect.left;
         touchOffsetY = touch.clientY - rect.top;
+
         playSound('click');
     }
+
     function handleTouchMove(e) {
-        if (!dragGhost) return;
+        if (!touchDragGhost || !touchDragSrc) return;
         e.preventDefault();
+
         const touch = e.touches[0];
-        dragGhost.style.left = (touch.clientX - touchOffsetX) + 'px';
-        dragGhost.style.top  = (touch.clientY - touchOffsetY)  + 'px';
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        const cx = touch.clientX;
+        const cy = touch.clientY;
+
+        // ゴーストを指に追従させる
+        touchDragGhost.style.left = (cx - touchOffsetX) + 'px';
+        touchDragGhost.style.top  = (cy - touchOffsetY) + 'px';
+
+        // ドロップゾーンのハイライト更新
+        // ゴーストは pointer-events:none なので elementFromPoint は通過する
+        const elemBelow = document.elementFromPoint(cx, cy);
         document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
-        if (target && target.classList.contains('drop-zone')) target.classList.add('drag-over');
+        if (elemBelow) {
+            const dz = elemBelow.closest('.drop-zone');
+            if (dz) dz.classList.add('drag-over');
+        }
+
+        // ===== 自動スクロール =====
+        stopAutoScroll();
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        let scrollDx = 0;
+        let scrollDy = 0;
+
+        if (cy < SCROLL_ZONE)        scrollDy = -SCROLL_SPEED;
+        else if (cy > vh - SCROLL_ZONE) scrollDy =  SCROLL_SPEED;
+        if (cx < SCROLL_ZONE)        scrollDx = -SCROLL_SPEED;
+        else if (cx > vw - SCROLL_ZONE) scrollDx =  SCROLL_SPEED;
+
+        if (scrollDx !== 0 || scrollDy !== 0) {
+            startAutoScroll(scrollDx, scrollDy);
+        }
     }
+
     function handleTouchEnd(e) {
-        if (!dragGhost || !activeDragEl) return;
+        if (!touchDragGhost || !touchDragSrc) return;
+        e.preventDefault();
+        stopAutoScroll();
+
         const touch = e.changedTouches[0];
-        dragGhost.remove(); dragGhost = null;
-        activeDragEl.style.opacity = '1';
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        const cx = touch.clientX;
+        const cy = touch.clientY;
+
+        // ゴーストを非表示にしてから要素を探す
+        touchDragGhost.style.display = 'none';
+        const elemBelow = document.elementFromPoint(cx, cy);
+        touchDragGhost.style.display = '';
+
+        // ゴーストを除去
+        touchDragGhost.remove();
+        touchDragGhost = null;
+
+        // 元要素を元に戻す
+        touchDragSrc.style.opacity = '1';
+
+        // ドロップゾーンのハイライトを解除
         document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
-        if (target) {
-            let dropTarget = target;
-            if (dropTarget.classList.contains('draggable-item')) dropTarget = dropTarget.parentNode;
-            if (dropTarget.classList.contains('drop-zone')) {
+
+        if (elemBelow) {
+            // drop-zone またはその子要素にドロップ
+            const dropTarget = elemBelow.closest('.drop-zone');
+            if (dropTarget && !isAnswerRevealed) {
+                // 既存の中身を語群へ返す
                 if (dropTarget.hasChildNodes()) {
                     const child = dropTarget.firstChild;
-                    if (child.dataset && !child.id) { child.remove(); }
-                    else { document.getElementById('word-bank').appendChild(child); }
+                    // クローン（id なし）は削除、本物は語群へ
+                    if (!child.id) {
+                        child.remove();
+                    } else {
+                        document.getElementById('word-bank').appendChild(child);
+                    }
                 }
-                dropTarget.appendChild(activeDragEl);
+                dropTarget.appendChild(touchDragSrc);
                 playSound('drop');
                 syncSameIdDropZoneAfterDrop(dropTarget);
-            } else if (dropTarget.id === 'word-bank' || dropTarget.closest('.word-bank') || dropTarget.closest('#word-bank-area')) {
-                document.getElementById('word-bank').appendChild(activeDragEl);
-                playSound('drop');
+            } else {
+                // 語群エリアへ戻す
+                const wordBankArea = elemBelow.closest('#word-bank-area');
+                const wordBankEl   = document.getElementById('word-bank');
+                if (!isAnswerRevealed && (wordBankArea || elemBelow.id === 'word-bank' || elemBelow.classList.contains('word-bank'))) {
+                    wordBankEl.appendChild(touchDragSrc);
+                    playSound('drop');
+                }
+                // それ以外（元の場所に戻す）はそのまま（親要素は変わらない）
             }
         }
-        activeDragEl = null;
-        checkDragSubmit();
+
+        touchDragSrc = null;
     }
-    function checkDragSubmit() {
-        // drag-fill では常に解答可能（未配置でも進める）
-        // actionBtn はすでに enabled なので何もしない
+
+    // 自動スクロール（端にドラッグ中にページをスクロールする）
+    function startAutoScroll(dx, dy) {
+        if (touchAutoScrollTimer) return;
+        touchAutoScrollTimer = setInterval(() => {
+            window.scrollBy(dx, dy);
+            // ゴーストはfixedなので画面上の位置はそのまま追従する
+        }, 16);
+    }
+    function stopAutoScroll() {
+        if (touchAutoScrollTimer) {
+            clearInterval(touchAutoScrollTimer);
+            touchAutoScrollTimer = null;
+        }
     }
 
     // =====================================================
@@ -1559,13 +1641,14 @@
     // =====================================================
     function handleAction() {
         if (isWaitingForSelfGrade) return;
-        playSound('click');
 
         if (!isAnswerRevealed) {
+            playSound('click');
             checkAnswer();
         } else {
             playQueuePos++;
             if (playQueuePos < playQueue.length) {
+                playSound('next');
                 renderQuestion();
             } else {
                 const total = playQueue.length;
@@ -1592,12 +1675,24 @@
         actionBtn.style.display = 'block';
         actionBtn.innerText     = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '結果を見る';
         updateProgressBar();
-        playSound(mark === 'correct' ? 'correct' : 'incorrect');
+
+        // 自己採点結果に応じて効果音を変える
+        if (mark === 'correct')  playSound('correct');
+        else if (mark === 'partial') playSound('partial');
+        else                         playSound('incorrect');
     }
 
+    // =====================================================
+    //  [修正1] fill / drag-fill の正誤判定
+    //  - fill: 同一IDの入力欄は「最初に出現したもの」1つだけ採点し、
+    //          同一IDの重複採点を防ぐ
+    //  - drag-fill: ゾーン内の「本物のアイテム（id属性あり）」だけを採点し、
+    //               クローン（id属性なし）は無視する
+    //               正誤は answers オブジェクトのキーに対応する全ゾーンを採点
+    // =====================================================
     function checkAnswer() {
         const qOrig     = currentSession.questions[playQueue[playQueuePos]];
-        const q         = qOrig; // 採点は元データを参照
+        const q         = qOrig;
         const qIdx      = playQueue[playQueuePos];
         const actionBtn = document.getElementById('action-btn');
 
@@ -1618,7 +1713,6 @@
         let isCorrectGlobal = true;
 
         if (q.type === 'single') {
-            // 未選択の場合は不正解
             if (userSelectionSingle === null) isCorrectGlobal = false;
             else isCorrectGlobal = (userSelectionSingle === q.answer);
 
@@ -1633,8 +1727,8 @@
                     btn.style.background  = 'rgba(239, 68, 68, 0.2)';
                 }
             });
+
         } else if (q.type === 'multi') {
-            // 未選択の場合は不正解
             if (!userSelectionMulti.length) {
                 isCorrectGlobal = false;
             } else {
@@ -1651,6 +1745,7 @@
                     btn.style.background  = 'rgba(239, 68, 68, 0.2)';
                 }
             });
+
         } else if (q.type === 'sequence') {
             let allCorrect = true;
             document.querySelectorAll('.seq-row').forEach((row, idx) => {
@@ -1670,55 +1765,117 @@
                 });
             });
             isCorrectGlobal = allCorrect;
+
         } else if (q.type === 'fill') {
-            // 同一IDの入力欄は最初の値を採用（同期済みのはずなので同じ値）
-            const seen = {};
-            let allCorrect = true;
-            document.querySelectorAll('.blank-input').forEach(input => {
-                const id          = input.dataset.id;
-                const val         = input.value.trim();
-                const correctAnswer = q.answers[id];
-                if (val === correctAnswer) {
-                    input.classList.add('correct');
+            // ── fill 正誤判定 ──
+            // answers オブジェクトの各キーについて1回だけ判定する（重複排除）
+            // 同一IDの input が複数あっても先頭の値を使い、1つの正誤として扱う
+            const answeredIds = new Set();
+            isCorrectGlobal = true;
+
+            // answers のキーごとに正誤を判定し、対応する全 input を着色する
+            Object.entries(q.answers).forEach(([id, correctAnswer]) => {
+                // このIDの入力欄すべてを取得
+                const inputs = document.querySelectorAll(`.blank-input[data-id="${id}"]`);
+                if (!inputs.length) return;
+
+                // 値は同期済みなので最初の1つから取得
+                const userVal = inputs[0].value.trim();
+
+                // 正規化比較（全角→半角、余分な空白除去）
+                const normalize = str => str
+                    .replace(/　/g, ' ')          // 全角スペース→半角
+                    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+                    .trim();
+
+                const isMatch = normalize(userVal) === normalize(correctAnswer);
+
+                if (isMatch) {
+                    inputs.forEach(inp => {
+                        inp.classList.add('correct');
+                        inp.readOnly = true;
+                    });
                 } else {
-                    input.classList.add('incorrect');
-                    allCorrect = false;
-                    if (!seen[id]) {
-                        seen[id] = true;
+                    isCorrectGlobal = false;
+                    inputs.forEach(inp => {
+                        inp.classList.add('incorrect');
+                        inp.readOnly = true;
+                    });
+                    // 正解ラベルは最初の input の直後にのみ挿入
+                    if (!answeredIds.has(id)) {
+                        answeredIds.add(id);
                         const label = document.createElement('span');
                         label.className = 'correct-answer-label';
                         label.innerText = `(${correctAnswer})`;
-                        input.parentNode.insertBefore(label, input.nextSibling);
+                        inputs[0].parentNode.insertBefore(label, inputs[0].nextSibling);
                     }
                 }
-                input.readOnly = true;
             });
-            isCorrectGlobal = allCorrect;
+
         } else if (q.type === 'drag-fill') {
-            const seen = {};
-            let allCorrect = true;
-            document.querySelectorAll('.drop-zone').forEach(zone => {
-                const id            = zone.dataset.id;
-                const correctAnswer = q.answers[id];
-                // クローンは採点から除外（実アイテムのみ）
-                const item = zone.querySelector('[id]') || zone.firstChild;
-                const val  = item ? (item.dataset ? item.dataset.val : null) : null;
-                if (val === correctAnswer) {
-                    zone.classList.add('correct');
-                } else {
-                    zone.classList.add('incorrect');
-                    allCorrect = false;
-                    if (!seen[id]) {
-                        seen[id] = true;
+            // ── drag-fill 正誤判定 ──
+            // answers のキーごとに1回だけ判定する（重複ゾーンは代表1個を採用）
+            // クローン要素（id 属性なし）は採点対象から除外する
+            isCorrectGlobal = true;
+            const judgedIds = new Set();
+
+            Object.entries(q.answers).forEach(([id, correctAnswer]) => {
+                // このIDを持つドロップゾーンのうち「本物のアイテム（id属性あり）を含む最初のゾーン」を採点
+                const zones = document.querySelectorAll(`.drop-zone[data-id="${id}"]`);
+                let userVal = null;
+                let representativeZone = null;
+
+                zones.forEach(zone => {
+                    if (representativeZone) return; // 代表ゾーンが決まったらスキップ
+                    const item = zone.querySelector('[id]'); // id属性を持つ本物のアイテム
+                    if (item && item.dataset && item.dataset.val) {
+                        userVal = item.dataset.val;
+                        representativeZone = zone;
+                    } else if (!item && zone.firstChild && zone.firstChild.dataset && zone.firstChild.dataset.val && zone.firstChild.id) {
+                        // フォールバック: firstChild が本物
+                        userVal = zone.firstChild.dataset.val;
+                        representativeZone = zone;
+                    }
+                });
+
+                // 未配置の場合（全ゾーンが空 or クローンのみ）
+                if (userVal === null) {
+                    isCorrectGlobal = false;
+                    zones.forEach(zone => zone.classList.add('incorrect'));
+                    // 正解ラベルを最初のゾーンに追加
+                    if (!judgedIds.has(id) && zones.length > 0) {
+                        judgedIds.add(id);
                         const label = document.createElement('span');
                         label.className = 'correct-answer-label';
                         label.innerText = `(${correctAnswer})`;
-                        zone.parentNode.insertBefore(label, zone.nextSibling);
+                        zones[0].parentNode.insertBefore(label, zones[0].nextSibling);
+                    }
+                    return;
+                }
+
+                if (userVal === correctAnswer) {
+                    zones.forEach(zone => zone.classList.add('correct'));
+                } else {
+                    isCorrectGlobal = false;
+                    zones.forEach(zone => zone.classList.add('incorrect'));
+                    if (!judgedIds.has(id)) {
+                        judgedIds.add(id);
+                        const label = document.createElement('span');
+                        label.className = 'correct-answer-label';
+                        label.innerText = `(${correctAnswer})`;
+                        // 代表ゾーン（または最初のゾーン）の後に挿入
+                        const targetZone = representativeZone || zones[0];
+                        targetZone.parentNode.insertBefore(label, targetZone.nextSibling);
                     }
                 }
-                if (item) item.draggable = false;
+
+                // ドラッグ不可にする
+                zones.forEach(zone => {
+                    zone.querySelectorAll('.draggable-item').forEach(item => {
+                        item.draggable = false;
+                    });
+                });
             });
-            isCorrectGlobal = allCorrect;
         }
 
         // 正誤記録
@@ -1811,6 +1968,7 @@
             alert('不正解の問題はありません！');
             return;
         }
+        playSound('start');
         startSpecificQuestion(wrongIds);
     }
     </script>
