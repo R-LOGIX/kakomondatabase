@@ -137,8 +137,7 @@ const database2 = [
                     {label: "【食虫類】歩行", options: [{id:"四足", text:"四足"}, {id:"直立二足歩行", text:"直立二足歩行"}]},
                     {label: "【食虫類】大後頭孔", options: [{id:"真下", text:"真下"}, {id:"斜め後方", text:"斜め後方"}]},
                     {label: "【食虫類】脳の大きさ", options: [{id:"小さい", text:"小さい"}, {id:"大きい", text:"大きい"}]},
-                    {label: "【食虫類】眼窩上隆起", options: [{id:"あり", text:"あり"}, {id:"なし", text:"なし"}]},
-                    {label: "【食虫類】おとがい", options: [{id:"あり", text:"あり"}, {id:"なし", text:"なし"}]},
+         
                     
                     // 類人猿
                     {label: "【類人猿】両目", options: [{id:"顔の左右", text:"顔の左右"}, {id:"顔の前面", text:"顔の前面"}]},
