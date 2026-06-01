@@ -1260,8 +1260,15 @@
             document.querySelectorAll('.blank-input').forEach(input => {
                 const id = input.dataset.id;
                 const val = (input.value || "").trim();
-                const correctAnswer = q.answers[id] != null ? String(q.answers[id]).trim() : "";
-                if (val === correctAnswer && val !== "") {
+                let correctAnswers = [];
+                if (Array.isArray(q.answers[id])) {
+                    correctAnswers = q.answers[id].map(a => String(a).trim());
+                } else if (q.answers[id] != null) {
+                    correctAnswers = [String(q.answers[id]).trim()];
+                }
+                const isCorrect = correctAnswers.includes(val) && val !== "";
+                
+                if (isCorrect) {
                     input.classList.add('correct');
                 } else {
                     input.classList.add('incorrect');
@@ -1270,7 +1277,7 @@
                         seen[id] = true;
                         const label = document.createElement('span');
                         label.className = 'correct-answer-label';
-                        label.innerText = `(${correctAnswer})`;
+                        label.innerText = `(${correctAnswers.join(' / ')})`;
                         input.parentNode.insertBefore(label, input.nextSibling);
                     }
                 }
@@ -1284,8 +1291,15 @@
                 const id = zone.dataset.id;
                 const item = zone.querySelector('.draggable-item');
                 const val = item ? (item.textContent || "").trim() : "";
-                const correctAnswer = q.answers[id] != null ? String(q.answers[id]).trim() : "";
-                if (val === correctAnswer && val !== "") {
+                let correctAnswers = [];
+                if (Array.isArray(q.answers[id])) {
+                    correctAnswers = q.answers[id].map(a => String(a).trim());
+                } else if (q.answers[id] != null) {
+                    correctAnswers = [String(q.answers[id]).trim()];
+                }
+                const isCorrect = correctAnswers.includes(val) && val !== "";
+                
+                if (isCorrect) {
                     zone.classList.add('correct');
                 } else {
                     zone.classList.add('incorrect');
@@ -1294,7 +1308,7 @@
                         seen[id] = true;
                         const label = document.createElement('span');
                         label.className = 'correct-answer-label';
-                        label.innerText = `(${correctAnswer})`;
+                        label.innerText = `(${correctAnswers.join(' / ')})`;
                         zone.parentNode.insertBefore(label, zone.nextSibling);
                     }
                 }
