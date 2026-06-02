@@ -857,13 +857,24 @@
         expPanel.style.display = 'none';
         document.getElementById('explanation-text').innerHTML = '';
         retryBtn.style.display = 'none';
-        actionBtn.style.display = '';
+        actionBtn.style.display = 'inline-block';
         actionBtn.innerText = '解答する';
         actionBtn.disabled = false;
         kbHint.innerHTML = '';
 
         const questionLabel = q.title || `第 ${playQueue[playQueuePos] + 1} 問`;
         const labelHtml = `<div class="question-number-label">${questionLabel}</div>`;
+
+        function handleTabKey(e) {
+            if (e.key === 'Tab' || e.keyCode === 9) {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 1;
+                this.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
 
         if (q.type === 'single' || q.type === 'multi' || q.type === 'sequence') {
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>');
@@ -884,6 +895,7 @@
                     this.setAttribute('readonly', 'readonly');
                 });
                 inp.addEventListener('input', () => syncSameIdInputs(inp.dataset.id, inp.value));
+                inp.addEventListener('keydown', handleTabKey);
             });
         } else if (q.type === 'drag-fill') {
             wArea.style.display = 'block';
@@ -921,6 +933,7 @@
                 ta.addEventListener('blur', function() {
                     this.setAttribute('readonly', 'readonly');
                 });
+                ta.addEventListener('keydown', handleTabKey);
             });
             actionBtn.innerText = '解答例を確認する';
         }
@@ -1258,9 +1271,9 @@
         btn.style.transform = 'scale(1.05)';
 
         const actionBtn = document.getElementById('action-btn');
-        actionBtn.style.display = '';
+        actionBtn.style.display = 'inline-block';
         actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
-        document.getElementById('retry-question-btn').style.display = '';
+        document.getElementById('retry-question-btn').style.display = 'inline-block';
         updateProgressBar();
         playSound(mark === 'correct' ? 'correct' : 'incorrect');
     }
@@ -1273,6 +1286,7 @@
         if (q.type === 'essay') {
             isWaitingForSelfGrade = true;
             actionBtn.style.display = 'none';
+            document.getElementById('retry-question-btn').style.display = 'inline-block';
             const sample = q.sampleAnswer || q.answer || q.explanation || '解答例がありません。';
             document.getElementById('essay-sample-text').innerHTML = String(sample).replace(/\n/g, '<br>');
             document.getElementById('essay-sample-area').style.display = 'block';
@@ -1283,8 +1297,8 @@
 
         isAnswerRevealed = true;
         actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
-        actionBtn.style.display = '';
-        document.getElementById('retry-question-btn').style.display = '';
+        actionBtn.style.display = 'inline-block';
+        document.getElementById('retry-question-btn').style.display = 'inline-block';
         updateProgressBar();
 
         let isCorrectGlobal = true;
