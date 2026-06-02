@@ -1,8 +1,8 @@
 const database3 = [
   {
-    categoryId: "biology_2025_b",
-    categoryName: "医系生物 2016-2024 過去問まとめ (2025年度 Bクラス代表)",
-    description: "医歯薬系の生物学過去問まとめ（全34問）",
+    categoryId: "ikeiseibutsu3",
+    categoryName: "医系生物3",
+    description: "医系生物（関）2016-2024まとめ",
     questions: [
       {
         type: "essay",
