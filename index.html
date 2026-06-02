@@ -867,11 +867,19 @@
 
         function handleTabKey(e) {
             if (e.key === 'Tab' || e.keyCode === 9) {
+                // OSやブラウザの予測変換確定を防ぐためデフォルトのアクションを無効化
                 e.preventDefault();
+                
+                // IMEのサジェスト（予測候補表示）を強制的にクリアしコンテキストをリセットするため、一度フォーカスを外す
+                this.blur();
+                
                 const start = this.selectionStart;
                 const end = this.selectionEnd;
                 this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
                 this.selectionStart = this.selectionEnd = start + 1;
+                
+                // タブ文字を挿入後、再度フォーカスを当てる（これによりIMEサジェストが出ない状態に戻る）
+                this.focus();
                 this.dispatchEvent(new Event('input', { bubbles: true }));
             }
         }
@@ -882,18 +890,11 @@
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) => {
                 const rID = Math.random().toString(36).substring(2, 12);
                 return `<span class="blank-wrap">` +
-                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">` +
+                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="" autocomplete="nope" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">` +
                 `</span>`;
             });
             qArea.innerHTML = labelHtml + formattedText;
             qArea.querySelectorAll('.blank-input').forEach(inp => {
-                inp.setAttribute('readonly', 'readonly');
-                inp.addEventListener('focus', function() {
-                    this.removeAttribute('readonly');
-                });
-                inp.addEventListener('blur', function() {
-                    this.setAttribute('readonly', 'readonly');
-                });
                 inp.addEventListener('input', () => syncSameIdInputs(inp.dataset.id, inp.value));
                 inp.addEventListener('keydown', handleTabKey);
             });
@@ -923,16 +924,9 @@
         } else if (q.type === 'essay') {
             const rID = Math.random().toString(36).substring(2, 12);
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>') +
-                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>`;
+                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="nope" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true"></textarea>`;
             
             qArea.querySelectorAll('.essay-textarea').forEach(ta => {
-                ta.setAttribute('readonly', 'readonly');
-                ta.addEventListener('focus', function() {
-                    this.removeAttribute('readonly');
-                });
-                ta.addEventListener('blur', function() {
-                    this.setAttribute('readonly', 'readonly');
-                });
                 ta.addEventListener('keydown', handleTabKey);
             });
             actionBtn.innerText = '解答例を確認する';
@@ -1211,7 +1205,16 @@
     }
 
     function handleAction() {
-        if (isWaitingForSelfGrade) return;
+        if (isWaitingForSelfGrade) {
+            // 自己採点を明示的に行わずに次へ進む場合はデフォルトで×扱いとする（または部分点など）
+            const qIdx = playQueue[playQueuePos];
+            if (!sessionResults[currentDbIndex][qIdx]) {
+                sessionResults[currentDbIndex][qIdx] = { mark: 'incorrect' };
+            }
+            isWaitingForSelfGrade = false;
+            isAnswerRevealed = true;
+        }
+
         playSound('click');
 
         if (!isAnswerRevealed) checkAnswer();
@@ -1285,7 +1288,8 @@
 
         if (q.type === 'essay') {
             isWaitingForSelfGrade = true;
-            actionBtn.style.display = 'none';
+            actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
+            actionBtn.style.display = 'inline-block';
             document.getElementById('retry-question-btn').style.display = 'inline-block';
             const sample = q.sampleAnswer || q.answer || q.explanation || '解答例がありません。';
             document.getElementById('essay-sample-text').innerHTML = String(sample).replace(/\n/g, '<br>');
