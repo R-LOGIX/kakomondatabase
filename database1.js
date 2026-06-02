@@ -2,7 +2,7 @@ const database1 = [
     {
         categoryId: "ikeiseibutsu1",
         categoryName: "医系生物　過去問1",
-        description: "「医系生物（小代田）2016-2025まとめ」",
+        description: "医系生物（小代田）2016-2025まとめ",
         questions: [
             {
                 type: "drag-fill", title: "問1",
