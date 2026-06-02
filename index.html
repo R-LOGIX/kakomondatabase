@@ -539,6 +539,7 @@
 
                 <div class="controls">
                     <button class="btn btn-secondary" onclick="returnToProblemSelect()">問題一覧</button>
+                    <button class="btn btn-secondary" id="retry-question-btn" onclick="retryCurrentQuestion()" style="display:none;">もう1度解く</button>
                     <button class="btn btn-primary" id="action-btn" onclick="handleAction()">解答する</button>
                 </div>
                 <div class="keyboard-hint" id="keyboard-hint"></div>
@@ -803,6 +804,9 @@
     function startSpecificQuestion(queueIndices) {
         playQueue = queueIndices;
         playQueuePos = 0;
+        queueIndices.forEach(idx => {
+            delete sessionResults[currentDbIndex][idx];
+        });
         renderQuestion();
         switchView('view-quiz');
     }
@@ -842,6 +846,7 @@
         const wBank = document.getElementById('word-bank');
         const eArea = document.getElementById('essay-sample-area');
         const expPanel = document.getElementById('explanation-panel');
+        const retryBtn = document.getElementById('retry-question-btn');
         const actionBtn = document.getElementById('action-btn');
         const kbHint = document.getElementById('keyboard-hint');
 
@@ -851,6 +856,7 @@
         eArea.style.display = 'none';
         expPanel.style.display = 'none';
         document.getElementById('explanation-text').innerHTML = '';
+        retryBtn.style.display = 'none';
         actionBtn.style.display = 'block';
         actionBtn.innerText = '解答する';
         actionBtn.disabled = false;
@@ -863,11 +869,9 @@
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>');
         } else if (q.type === 'fill') {
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) => {
-                const rID = Math.random().toString(36).substring(2, 9);
+                const rID = Math.random().toString(36).substring(2, 12);
                 return `<span class="blank-wrap">` +
-                    `<input type="text" autocomplete="username" style="position:absolute; left:-9999px; width:0; height:0; opacity:0; pointer-events:none;" tabindex="-1">` +
-                    `<input type="password" autocomplete="new-password" style="position:absolute; left:-9999px; width:0; height:0; opacity:0; pointer-events:none;" tabindex="-1">` +
-                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="${p1}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">` +
+                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="${p1}" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">` +
                 `</span>`;
             });
             qArea.innerHTML = labelHtml + formattedText;
@@ -905,11 +909,9 @@
                 wBank.appendChild(div);
             });
         } else if (q.type === 'essay') {
-            const rID = Math.random().toString(36).substring(2, 9);
+            const rID = Math.random().toString(36).substring(2, 12);
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>') +
-                `<input type="text" autocomplete="username" style="position:absolute; left:-9999px; width:0; height:0; opacity:0; pointer-events:none;" tabindex="-1">` +
-                `<input type="password" autocomplete="new-password" style="position:absolute; left:-9999px; width:0; height:0; opacity:0; pointer-events:none;" tabindex="-1">` +
-                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>`;
+                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>`;
             
             qArea.querySelectorAll('.essay-textarea').forEach(ta => {
                 ta.setAttribute('readonly', 'readonly');
@@ -1188,6 +1190,13 @@
         }
     });
 
+    function retryCurrentQuestion() {
+        playSound('click');
+        isAnswerRevealed = false;
+        isWaitingForSelfGrade = false;
+        renderQuestion();
+    }
+
     function handleAction() {
         if (isWaitingForSelfGrade) return;
         playSound('click');
@@ -1238,7 +1247,9 @@
 
     function submitSelfGrade(mark, btn) {
         const qIdx = playQueue[playQueuePos];
-        sessionResults[currentDbIndex][qIdx] = { mark };
+        if (!sessionResults[currentDbIndex][qIdx]) {
+            sessionResults[currentDbIndex][qIdx] = { mark };
+        }
         isWaitingForSelfGrade = false;
         isAnswerRevealed = true;
 
@@ -1249,6 +1260,7 @@
         const actionBtn = document.getElementById('action-btn');
         actionBtn.style.display = 'block';
         actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
+        document.getElementById('retry-question-btn').style.display = 'block';
         updateProgressBar();
         playSound(mark === 'correct' ? 'correct' : 'incorrect');
     }
@@ -1270,6 +1282,7 @@
 
         isAnswerRevealed = true;
         actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
+        document.getElementById('retry-question-btn').style.display = 'block';
         updateProgressBar();
 
         let isCorrectGlobal = true;
@@ -1402,7 +1415,9 @@
         }
 
         const mark = isCorrectGlobal ? 'correct' : 'incorrect';
-        sessionResults[currentDbIndex][qIdx] = { mark };
+        if (!sessionResults[currentDbIndex][qIdx]) {
+            sessionResults[currentDbIndex][qIdx] = { mark };
+        }
 
         playSound(isCorrectGlobal ? 'correct' : 'incorrect');
 
