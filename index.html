@@ -890,7 +890,7 @@
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) => {
                 const rID = Math.random().toString(36).substring(2, 12);
                 return `<span class="blank-wrap">` +
-                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="" autocomplete="nope" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">` +
+                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" role="presentation">` +
                 `</span>`;
             });
             qArea.innerHTML = labelHtml + formattedText;
@@ -924,7 +924,7 @@
         } else if (q.type === 'essay') {
             const rID = Math.random().toString(36).substring(2, 12);
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>') +
-                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="nope" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true"></textarea>`;
+                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" role="presentation"></textarea>`;
             
             qArea.querySelectorAll('.essay-textarea').forEach(ta => {
                 ta.addEventListener('keydown', handleTabKey);
@@ -1458,3 +1458,4 @@
     </script>
 </body>
 </html>
+
