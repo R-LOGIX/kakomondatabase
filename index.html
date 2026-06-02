@@ -10,6 +10,7 @@
     
     <script src="database1.js"></script>
     <script src="database2.js"></script>
+    <script src="database3.js"></script>
     
     <style>
         :root {
@@ -75,6 +76,46 @@
             border: 2px solid var(--border-base);
             border-radius: 24px; box-shadow: var(--shadow-sm);
             padding: 30px;
+        }
+
+        /* ===== お知らせ ===== */
+        .announcement-panel {
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px solid rgba(245, 158, 11, 0.4);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+        .announcement-title {
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: #d97706;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .announcement-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .announcement-list li {
+            display: flex;
+            gap: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-main);
+            align-items: flex-start;
+        }
+        .announcement-date {
+            color: var(--text-muted);
+            font-weight: bold;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            padding-top: 2px;
         }
 
         /* ===== メニュー ===== */
@@ -433,13 +474,20 @@
             <div style="text-align: center; margin-bottom: 20px; color: var(--text-muted);">
                 学習を開始するセッションを選択してください。
             </div>
+
+            <!-- お知らせセクション -->
+            <div id="announcement-panel" class="announcement-panel" style="display: none;">
+                <div class="announcement-title">🔔 お知らせ</div>
+                <ul class="announcement-list" id="announcement-list"></ul>
+            </div>
+
             <div class="menu-grid" id="menu-container"></div>
 
             <!-- お問い合わせ領域 -->
             <div style="margin-top: 40px; padding: 24px; text-align: center; background: white; border: 2px solid var(--border-base); border-radius: 16px; box-shadow: var(--shadow-sm);">
                 <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 8px;">お問い合わせ</h3>
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">
-                    問題提供などあれば以下までメールお願いします。対応できるかもしれません。
+                    問題提供や問題訂正などあれば以下までメールお願いします。対応できるかもしれません。
                 </p>
                 <a href="mailto:r.logix.lab@gmail.com" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; background: rgba(79,70,229,0.1); color: var(--neon-blue); font-weight: bold; text-decoration: none; border-radius: 8px; transition: all 0.2s;">
                     ✉ r.logix.lab@gmail.com
@@ -562,9 +610,18 @@
     </main>
 
     <script>
+    // ==========================================
+    // ===== お知らせ設定（ここを編集して通知を追加・変更します） =====
+    // ==========================================
+    const siteAnnouncements = [
+        { date: '2026/06/02', text: '「医系生物（関）2016-2024まとめ」を追加しました！' }
+    ];
+    // ==========================================
+
     const questionDatabase = [
         ...(typeof database1 !== 'undefined' ? database1 : []),
-        ...(typeof database2 !== 'undefined' ? database2 : [])
+        ...(typeof database2 !== 'undefined' ? database2 : []),
+        ...(typeof database3 !== 'undefined' ? database3 : [])
     ];
 
     let audioCtx = null;
@@ -670,6 +727,19 @@
     function initApp() {
         loadSettings();
         syncSettingUI();
+        
+        // お知らせの描画
+        const annList = document.getElementById('announcement-list');
+        const annPanel = document.getElementById('announcement-panel');
+        if (typeof siteAnnouncements !== 'undefined' && siteAnnouncements.length > 0) {
+            annList.innerHTML = siteAnnouncements.map(a => 
+                `<li><span class="announcement-date">${a.date}</span><span class="announcement-text">${a.text}</span></li>`
+            ).join('');
+            annPanel.style.display = 'block';
+        } else {
+            annPanel.style.display = 'none';
+        }
+
         const container  = document.getElementById('menu-container');
         container.innerHTML = '';
 
@@ -1458,4 +1528,3 @@
     </script>
 </body>
 </html>
-
