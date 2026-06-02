@@ -2,7 +2,7 @@ const database2 = [
     {
         categoryId: "ikeiseibutsu2",
         categoryName: "医系生物　過去問2",
-        description: "「医系生物（関）2024」",
+        description: "医系生物（関）2024",
         questions: [
             // ▼ [修正点1] 同じ「問1」の小問を、1つの html プロパティ内で改行を使ってひとまとめに統合
             {
