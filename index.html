@@ -862,11 +862,12 @@
         if (q.type === 'single' || q.type === 'multi' || q.type === 'sequence') {
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>');
         } else if (q.type === 'fill') {
-            let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
-                `<span class="blank-wrap">` +
-                    `<input type="text" class="blank-input" data-id="${p1}" placeholder="${p1}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">` +
-                `</span>`
-            );
+            let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) => {
+                const rID = Math.random().toString(36).substring(2, 9);
+                return `<span class="blank-wrap">` +
+                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="${p1}" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">` +
+                `</span>`;
+            });
             qArea.innerHTML = labelHtml + formattedText;
             qArea.querySelectorAll('.blank-input').forEach(inp => {
                 inp.addEventListener('input', () => syncSameIdInputs(inp.dataset.id, inp.value));
@@ -895,8 +896,9 @@
                 wBank.appendChild(div);
             });
         } else if (q.type === 'essay') {
+            const rID = Math.random().toString(36).substring(2, 9);
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>') +
-                `<textarea class="essay-textarea" placeholder="ここに解答を記述してください..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>`;
+                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>`;
             actionBtn.innerText = '解答例を確認する';
         }
 
