@@ -857,7 +857,7 @@
         expPanel.style.display = 'none';
         document.getElementById('explanation-text').innerHTML = '';
         retryBtn.style.display = 'none';
-        actionBtn.style.display = 'block';
+        actionBtn.style.display = '';
         actionBtn.innerText = '解答する';
         actionBtn.disabled = false;
         kbHint.innerHTML = '';
@@ -871,7 +871,7 @@
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) => {
                 const rID = Math.random().toString(36).substring(2, 12);
                 return `<span class="blank-wrap">` +
-                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="${p1}" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">` +
+                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">` +
                 `</span>`;
             });
             qArea.innerHTML = labelHtml + formattedText;
@@ -911,7 +911,7 @@
         } else if (q.type === 'essay') {
             const rID = Math.random().toString(36).substring(2, 12);
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>') +
-                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>`;
+                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>`;
             
             qArea.querySelectorAll('.essay-textarea').forEach(ta => {
                 ta.setAttribute('readonly', 'readonly');
@@ -1258,9 +1258,9 @@
         btn.style.transform = 'scale(1.05)';
 
         const actionBtn = document.getElementById('action-btn');
-        actionBtn.style.display = 'block';
+        actionBtn.style.display = '';
         actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
-        document.getElementById('retry-question-btn').style.display = 'block';
+        document.getElementById('retry-question-btn').style.display = '';
         updateProgressBar();
         playSound(mark === 'correct' ? 'correct' : 'incorrect');
     }
@@ -1273,7 +1273,8 @@
         if (q.type === 'essay') {
             isWaitingForSelfGrade = true;
             actionBtn.style.display = 'none';
-            document.getElementById('essay-sample-text').innerHTML = q.sampleAnswer.replace(/\n/g, '<br>');
+            const sample = q.sampleAnswer || q.answer || q.explanation || '解答例がありません。';
+            document.getElementById('essay-sample-text').innerHTML = String(sample).replace(/\n/g, '<br>');
             document.getElementById('essay-sample-area').style.display = 'block';
             const ta = document.querySelector('.essay-textarea');
             if (ta) ta.readOnly = true;
@@ -1282,7 +1283,8 @@
 
         isAnswerRevealed = true;
         actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
-        document.getElementById('retry-question-btn').style.display = 'block';
+        actionBtn.style.display = '';
+        document.getElementById('retry-question-btn').style.display = '';
         updateProgressBar();
 
         let isCorrectGlobal = true;
@@ -1358,10 +1360,11 @@
                 const id = input.dataset.id;
                 const val = (input.value || "").trim();
                 let correctAnswers = [];
-                if (Array.isArray(q.answers[id])) {
-                    correctAnswers = q.answers[id].map(a => String(a).trim());
-                } else if (q.answers[id] != null) {
-                    correctAnswers = [String(q.answers[id]).trim()];
+                const ansObj = q.answers || q.answer || {};
+                if (Array.isArray(ansObj[id])) {
+                    correctAnswers = ansObj[id].map(a => String(a).trim());
+                } else if (ansObj[id] != null) {
+                    correctAnswers = [String(ansObj[id]).trim()];
                 }
                 const isCorrect = correctAnswers.includes(val) && val !== "";
                 
@@ -1389,10 +1392,11 @@
                 const item = zone.querySelector('.draggable-item');
                 const val = item ? (item.textContent || "").trim() : "";
                 let correctAnswers = [];
-                if (Array.isArray(q.answers[id])) {
-                    correctAnswers = q.answers[id].map(a => String(a).trim());
-                } else if (q.answers[id] != null) {
-                    correctAnswers = [String(q.answers[id]).trim()];
+                const ansObj = q.answers || q.answer || {};
+                if (Array.isArray(ansObj[id])) {
+                    correctAnswers = ansObj[id].map(a => String(a).trim());
+                } else if (ansObj[id] != null) {
+                    correctAnswers = [String(ansObj[id]).trim()];
                 }
                 const isCorrect = correctAnswers.includes(val) && val !== "";
                 
@@ -1423,8 +1427,8 @@
 
         if (q.explanation) {
             const panel = document.getElementById('explanation-panel');
-            document.getElementById('explanation-text').innerHTML = q.explanation.replace(/\n/g, '<br>');
-            panel.style.display = 'block';
+            document.getElementById('explanation-text').innerHTML = String(q.explanation).replace(/\n/g, '<br>');
+            panel.style.display = '';
         }
     }
 
