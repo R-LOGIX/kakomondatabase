@@ -865,11 +865,20 @@
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) => {
                 const rID = Math.random().toString(36).substring(2, 9);
                 return `<span class="blank-wrap">` +
-                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="${p1}" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">` +
+                    `<input type="text" autocomplete="username" style="position:absolute; left:-9999px; width:0; height:0; opacity:0; pointer-events:none;" tabindex="-1">` +
+                    `<input type="password" autocomplete="new-password" style="position:absolute; left:-9999px; width:0; height:0; opacity:0; pointer-events:none;" tabindex="-1">` +
+                    `<input type="text" class="blank-input" data-id="${p1}" name="fill_${rID}" id="fill_${rID}" placeholder="${p1}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">` +
                 `</span>`;
             });
             qArea.innerHTML = labelHtml + formattedText;
             qArea.querySelectorAll('.blank-input').forEach(inp => {
+                inp.setAttribute('readonly', 'readonly');
+                inp.addEventListener('focus', function() {
+                    this.removeAttribute('readonly');
+                });
+                inp.addEventListener('blur', function() {
+                    this.setAttribute('readonly', 'readonly');
+                });
                 inp.addEventListener('input', () => syncSameIdInputs(inp.dataset.id, inp.value));
             });
         } else if (q.type === 'drag-fill') {
@@ -898,7 +907,19 @@
         } else if (q.type === 'essay') {
             const rID = Math.random().toString(36).substring(2, 9);
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>') +
-                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>`;
+                `<input type="text" autocomplete="username" style="position:absolute; left:-9999px; width:0; height:0; opacity:0; pointer-events:none;" tabindex="-1">` +
+                `<input type="password" autocomplete="new-password" style="position:absolute; left:-9999px; width:0; height:0; opacity:0; pointer-events:none;" tabindex="-1">` +
+                `<textarea class="essay-textarea" id="essay_${rID}" name="essay_${rID}" placeholder="ここに解答を記述してください..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>`;
+            
+            qArea.querySelectorAll('.essay-textarea').forEach(ta => {
+                ta.setAttribute('readonly', 'readonly');
+                ta.addEventListener('focus', function() {
+                    this.removeAttribute('readonly');
+                });
+                ta.addEventListener('blur', function() {
+                    this.setAttribute('readonly', 'readonly');
+                });
+            });
             actionBtn.innerText = '解答例を確認する';
         }
 
