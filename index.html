@@ -355,6 +355,12 @@
             touch-action: none;
         }
         .draggable-item:active { cursor: grabbing; transform: translate(2px, 2px); box-shadow: none; }
+        .draggable-item.tap-selected {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.3);
+            transform: scale(1.05);
+            z-index: 10;
+        }
         
         .drop-zone-wrap {
             position: relative; display: inline-block; margin: 0 6px; vertical-align: bottom;
@@ -671,6 +677,7 @@
     let userSelectionSingle   = null;
     let userSelectionMulti    = [];
     let userSelectionSequence = {};
+    let selectedTapItem       = null;
 
     const sessionResults = {};
 
@@ -905,6 +912,7 @@
         userSelectionSingle = null;
         userSelectionMulti = [];
         userSelectionSequence = {};
+        selectedTapItem = null;
 
         const pct = Math.round((playQueuePos / playQueue.length) * 100);
         document.getElementById('progress-bar').style.width = pct + '%';
@@ -972,7 +980,7 @@
             wArea.style.display = 'block';
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
                 `<span class="drop-zone-wrap">` +
-                    `<span class="drop-zone" data-id="${p1}" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)"></span>` +
+                    `<span class="drop-zone" data-id="${p1}" onclick="handleDropZoneClick(event, this)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)"></span>` +
                 `</span>`
             );
             qArea.innerHTML = labelHtml + formattedText;
@@ -989,6 +997,7 @@
                 div.addEventListener('touchstart', handleTouchStart, { passive: false });
                 div.addEventListener('touchmove',  handleTouchMove,  { passive: false });
                 div.addEventListener('touchend',   handleTouchEnd);
+                div.addEventListener('click', handleDraggableItemClick);
                 wBank.appendChild(div);
             });
         } else if (q.type === 'essay') {
@@ -1152,6 +1161,58 @@
         } else if (target.id === 'word-bank' || target.classList.contains('word-bank')) {
             document.getElementById('word-bank').appendChild(draggedEl);
             playSound('drop');
+        }
+    }
+
+    function handleDropZoneClick(e, zone) {
+        if (isAnswerRevealed) return;
+        if (!selectedTapItem) return;
+
+        if (zone.hasChildNodes()) {
+            Array.from(zone.children).forEach(child => {
+                if (child.id) document.getElementById('word-bank').appendChild(child);
+                else child.remove();
+            });
+        }
+        zone.appendChild(selectedTapItem);
+        playSound('drop');
+        syncSameIdDropZoneAfterDrop(zone);
+
+        selectedTapItem.classList.remove('tap-selected');
+        selectedTapItem = null;
+    }
+
+    function handleDraggableItemClick(e) {
+        if (isAnswerRevealed) return;
+        e.stopPropagation();
+
+        if (this.parentNode && this.parentNode.classList.contains('drop-zone')) {
+            if (selectedTapItem && selectedTapItem !== this) {
+                const zone = this.parentNode;
+                document.getElementById('word-bank').appendChild(this);
+                zone.appendChild(selectedTapItem);
+                playSound('drop');
+                syncSameIdDropZoneAfterDrop(zone);
+                selectedTapItem.classList.remove('tap-selected');
+                selectedTapItem = null;
+                return;
+            } else {
+                const zone = this.parentNode;
+                document.getElementById('word-bank').appendChild(this);
+                syncSameIdDropZoneAfterDrop(zone);
+                this.classList.remove('tap-selected');
+                if (selectedTapItem === this) selectedTapItem = null;
+                return;
+            }
+        }
+
+        if (selectedTapItem === this) {
+            this.classList.remove('tap-selected');
+            selectedTapItem = null;
+        } else {
+            if (selectedTapItem) selectedTapItem.classList.remove('tap-selected');
+            this.classList.add('tap-selected');
+            selectedTapItem = this;
         }
     }
 
