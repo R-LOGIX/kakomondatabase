@@ -474,8 +474,11 @@
 
                 <!-- 一括操作ボタン -->
                 <div class="problem-select-controls">
-                    <button class="btn btn-secondary" onclick="selectAllQuestions(true)">☑ 全問題選択</button>
-                    <button class="btn btn-secondary" onclick="selectAllQuestions(false)">☐ 全問題解除</button>
+                    <button class="btn btn-secondary" onclick="selectAllQuestions(true)">☑ 全選択</button>
+                    <button class="btn btn-secondary" onclick="selectAllQuestions(false)">☐ 全解除</button>
+                    <button class="btn btn-secondary" onclick="selectQuestionsByType(['single', 'multi', 'sequence'])">☑ 記号問題</button>
+                    <button class="btn btn-secondary" onclick="selectQuestionsByType(['fill', 'drag-fill'])">☑ 短答・語群</button>
+                    <button class="btn btn-secondary" onclick="selectQuestionsByType(['essay'])">☑ 論述問題</button>
                 </div>
 
                 <!-- フラットな問題グリッド -->
@@ -539,6 +542,20 @@
                     <button class="btn btn-primary" id="action-btn" onclick="handleAction()">解答する</button>
                 </div>
                 <div class="keyboard-hint" id="keyboard-hint"></div>
+            </div>
+        </section>
+
+        <!-- ===== 結果画面 ===== -->
+        <section id="view-result" class="view-section">
+            <div class="glass-card" style="text-align: center; padding: 40px 20px;">
+                <h2 style="color: var(--neon-blue); margin-bottom: 20px;">1巡完了</h2>
+                <div style="font-size: 1.2rem; margin-bottom: 30px;">
+                    正答率: <span id="result-score" style="font-weight: bold; color: var(--neon-green);"></span>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" id="btn-retry-incorrect" onclick="retryIncorrectQuestions()" style="display:none;">間違えた問題（△・×）をやり直す</button>
+                    <button class="btn btn-secondary" onclick="returnToProblemSelect()">問題一覧へ戻る</button>
+                </div>
             </div>
         </section>
     </main>
@@ -756,6 +773,17 @@
         renderProblemContainer();
     }
 
+    function selectQuestionsByType(types) {
+        playSound('click');
+        const allQ = currentSession.questions;
+        allQ.forEach((q, i) => {
+            if (types.includes(q.type)) {
+                selectedQuestionSet.add(i);
+            }
+        });
+        renderProblemContainer();
+    }
+
     function updateSelCountBar() {
         document.getElementById('sel-count').textContent = selectedQuestionSet.size;
     }
@@ -836,7 +864,7 @@
         } else if (q.type === 'fill') {
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) =>
                 `<span class="blank-wrap">` +
-                    `<input type="text" class="blank-input" data-id="${p1}" placeholder="${p1}" autocomplete="off">` +
+                    `<input type="text" class="blank-input" data-id="${p1}" placeholder="${p1}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">` +
                 `</span>`
             );
             qArea.innerHTML = labelHtml + formattedText;
@@ -868,7 +896,7 @@
             });
         } else if (q.type === 'essay') {
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>') +
-                `<textarea class="essay-textarea" placeholder="ここに解答を記述してください..."></textarea>`;
+                `<textarea class="essay-textarea" placeholder="ここに解答を記述してください..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>`;
             actionBtn.innerText = '解答例を確認する';
         }
 
@@ -1146,10 +1174,43 @@
             playQueuePos++;
             if (playQueuePos < playQueue.length) renderQuestion();
             else {
-                initApp();
-                returnToProblemSelect();
+                showResultScreen();
             }
         }
+    }
+
+    function showResultScreen() {
+        switchView('view-result');
+        let correctCount = 0;
+        let incorrectQuestions = [];
+
+        playQueue.forEach(qIdx => {
+            const res = sessionResults[currentDbIndex][qIdx];
+            if (res && res.mark === 'correct') {
+                correctCount++;
+            } else {
+                incorrectQuestions.push(qIdx);
+            }
+        });
+
+        const pct = playQueue.length > 0 ? Math.round((correctCount / playQueue.length) * 100) : 0;
+        document.getElementById('result-score').innerText = `${correctCount} / ${playQueue.length} (${pct}%)`;
+
+        const retryBtn = document.getElementById('btn-retry-incorrect');
+        if (incorrectQuestions.length > 0) {
+            retryBtn.style.display = 'inline-block';
+            retryBtn.onclick = () => retryIncorrectQuestions(incorrectQuestions);
+        } else {
+            retryBtn.style.display = 'none';
+        }
+    }
+
+    function retryIncorrectQuestions(incorrectQuestions) {
+        playSound('click');
+        selectedQuestionSet.clear();
+        incorrectQuestions.forEach(idx => selectedQuestionSet.add(idx));
+        updateSelCountBar();
+        startSelectedQuestions();
     }
 
     function submitSelfGrade(mark, btn) {
