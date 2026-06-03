@@ -300,6 +300,39 @@
             color: var(--text-muted); flex-shrink: 0;
         }
 
+        /* ===== 表内選択 (table-select) ===== */
+        .table-select-container {
+            width: 100%; overflow-x: auto;
+        }
+        .table-select-container table {
+            width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px;
+            border: 2px solid var(--border-base); font-size: 0.95rem; min-width: 500px;
+        }
+        .table-select-container th, .table-select-container td {
+            border: 1px solid var(--border-base); padding: 12px; text-align: center;
+            background: white; color: var(--text-main); vertical-align: middle;
+        }
+        .table-select-container th {
+            background: #f8fafc; font-weight: bold;
+        }
+        .table-select-input {
+            background: #f8fafc; border: 2px solid var(--border-base);
+            border-radius: 8px; padding: 6px 30px 6px 12px; font-size: 0.95rem; color: var(--neon-blue); font-weight: bold;
+            outline: none; cursor: pointer; display: inline-block;
+            min-width: 100px; max-width: 100%; text-overflow: ellipsis;
+            appearance: none; -webkit-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%2364748b" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position-x: calc(100% - 5px);
+            background-position-y: center;
+        }
+        .table-select-input:focus { border-color: var(--neon-blue); background-color: white; box-shadow: var(--shadow-sm); }
+        .table-select-input.correct { border-color: var(--neon-green) !important; color: var(--neon-green) !important; background-color: rgba(16, 185, 129, 0.1) !important; }
+        .table-select-input.incorrect { border-color: var(--neon-red) !important; color: var(--neon-red) !important; background-color: rgba(239, 68, 68, 0.1) !important; text-decoration: line-through; }
+        .table-select-wrap {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+
         /* ===== タイピング空欄補充 ===== */
         .blank-wrap {
             position: relative; display: inline-block; margin: 0 4px; vertical-align: bottom;
@@ -520,7 +553,7 @@
                 <div class="problem-select-controls">
                     <button class="btn btn-secondary" onclick="selectAllQuestions(true)">☑ 全選択</button>
                     <button class="btn btn-secondary" onclick="selectAllQuestions(false)">☐ 全解除</button>
-                    <button class="btn btn-secondary" onclick="selectQuestionsByType(['single', 'multi', 'sequence'])">☑ 記号問題</button>
+                    <button class="btn btn-secondary" onclick="selectQuestionsByType(['single', 'multi', 'sequence', 'table-select'])">☑ 記号問題</button>
                     <button class="btn btn-secondary" onclick="selectQuestionsByType(['fill', 'drag-fill'])">☑ 短答・語群</button>
                     <button class="btn btn-secondary" onclick="selectQuestionsByType(['essay'])">☑ 論述問題</button>
                 </div>
@@ -801,6 +834,7 @@
             if (q.type === 'single') typeText = '記号選択';
             else if (q.type === 'multi') typeText = '記号選択';
             else if (q.type === 'sequence') typeText = '記号選択';
+            else if (q.type === 'table-select') typeText = '記号選択';
             else if (q.type === 'fill') typeText = '短答';
             else if (q.type === 'drag-fill') typeText = '語群選択';
             else if (q.type === 'essay') typeText = '論述';
@@ -954,6 +988,30 @@
 
         if (q.type === 'single' || q.type === 'multi' || q.type === 'sequence') {
             qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>');
+        } else if (q.type === 'table-select') {
+            let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) => {
+                const rID = Math.random().toString(36).substring(2, 12);
+                let selectHtml = `<select class="table-select-input" data-id="${p1}" id="select_${rID}">`;
+                selectHtml += `<option value="" disabled selected>選択...</option>`;
+                if (q.optionsDist && q.optionsDist[p1]) {
+                    let opts = q.optionsDist[p1];
+                    if (quizSettings.randomOptions) opts = shuffleArray(opts);
+                    opts.forEach(opt => {
+                        selectHtml += `<option value="${opt.replace(/"/g, '&quot;')}">${opt}</option>`;
+                    });
+                }
+                selectHtml += `</select>`;
+                return `<span class="table-select-wrap">${selectHtml}</span>`;
+            });
+            qArea.innerHTML = labelHtml + q.text.replace(/\n/g, '<br>') + '<div class="table-select-container">' + formattedText + '</div>';
+            
+            qArea.querySelectorAll('.table-select-input').forEach(sel => {
+                sel.addEventListener('change', () => {
+                    document.querySelectorAll(`.table-select-input[data-id="${sel.dataset.id}"]`).forEach(inp => {
+                        if (inp.value !== sel.value) inp.value = sel.value;
+                    });
+                });
+            });
         } else if (q.type === 'fill') {
             let formattedText = q.html.replace(/\[\[([0-9a-zA-Zア-ン]+)\]\]/g, (_, p1) => {
                 const rID = Math.random().toString(36).substring(2, 12);
@@ -1488,6 +1546,39 @@
                     } else if (optId === userAns && userAns !== correctAns) {
                         btn.style.borderColor = 'var(--neon-red)';
                         btn.style.background = 'rgba(239, 68, 68, 0.2)';
+                    }
+                });
+            });
+            isCorrectGlobal = allCorrect;
+        } else if (q.type === 'table-select') {
+            const seen = {};
+            let allCorrect = true;
+            document.querySelectorAll('.table-select-input').forEach(sel => {
+                const id = sel.dataset.id;
+                const val = sel.value;
+                if (seen[id]) {
+                    sel.disabled = true;
+                    return;
+                }
+                seen[id] = true;
+                
+                let correctAnsRaw = q.answer[id];
+                if (correctAnsRaw === undefined) correctAnsRaw = [];
+                let correctList = [];
+                if (Array.isArray(correctAnsRaw)) correctList = correctAnsRaw.map(String);
+                else correctList = [String(correctAnsRaw)];
+                
+                const isCorrect = correctList.includes(val);
+                if (!isCorrect) allCorrect = false;
+                
+                document.querySelectorAll(`.table-select-input[data-id="${id}"]`).forEach(inp => {
+                    inp.disabled = true;
+                    inp.classList.add(isCorrect ? 'correct' : 'incorrect');
+                    if (!isCorrect && !inp.parentNode.querySelector('.correct-answer-label')) {
+                        const label = document.createElement('span');
+                        label.className = 'correct-answer-label';
+                        label.innerText = `[正解: ${correctList.join(' または ')}]`;
+                        inp.parentNode.appendChild(label);
                     }
                 });
             });
