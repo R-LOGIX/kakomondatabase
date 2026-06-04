@@ -564,8 +564,8 @@
                 </div>
 
                 <!-- 出題回数フィルター -->
-                <div class="problem-select-controls" style="align-items: center; justify-content: flex-start; background: #f8fafc; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border-base); gap: 8px;">
-                    <span style="font-size: 0.9rem; font-weight: bold; color: var(--text-main); white-space: nowrap;">出題回数・頻度:</span>
+                <div id="appearance-filter-container" class="problem-select-controls" style="align-items: center; justify-content: flex-start; background: #f8fafc; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border-base); gap: 8px; display: none;">
+                    <span style="font-size: 0.9rem; font-weight: bold; color: var(--text-main); white-space: nowrap;">出題回数：</span>
                     <input type="number" id="appearance-filter-input" value="2" min="1" max="99" style="width: 60px; padding: 6px 8px; border-radius: 8px; border: 2px solid var(--border-base); font-weight: bold; color: var(--neon-blue); outline: none;" onfocus="this.style.borderColor='var(--neon-blue)'" onblur="this.style.borderColor='var(--border-base)'">
                     <span style="font-size: 0.9rem; color: var(--text-main); font-weight: bold; white-space: nowrap;">回以上</span>
                     <button class="btn btn-secondary" onclick="selectQuestionsByAppearance()" style="flex: 0 1 auto; padding: 8px 16px; margin-left: auto;">☑ 選択に追加</button>
@@ -816,6 +816,13 @@
 
         document.getElementById('problem-select-title').innerText = currentSession.categoryName;
         syncSettingUI();
+
+        const hasAppearance = currentSession.questions.some(q => q.appearance);
+        const filterContainer = document.getElementById('appearance-filter-container');
+        if (filterContainer) {
+            filterContainer.style.display = hasAppearance ? 'flex' : 'none';
+        }
+
         renderProblemContainer();
         switchView('view-problem-select');
     }
@@ -858,7 +865,8 @@
             
             let innerHtml = `<span style="font-size: 0.95rem; line-height: 1.2;">${titleText}</span>`;
             if (quizSettings.showAppearance && q.appearance) {
-                innerHtml += `<div class="appearance-badge" style="font-size: 0.7rem; color: #d97706; background: rgba(245, 158, 11, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px; font-weight: bold; border: 1px solid rgba(245, 158, 11, 0.3);">頻度: ${q.appearance}</div>`;
+                const appStr = q.appearance.replace(/回/g, ''); // 念のため「回」があれば省き、最後に追加する
+                innerHtml += `<div class="appearance-badge" style="font-size: 0.7rem; color: #d97706; background: rgba(245, 158, 11, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px; font-weight: bold; border: 1px solid rgba(245, 158, 11, 0.3);">出題${appStr}回</div>`;
             }
             innerHtml += `<div class="problem-type-badge" style="margin-top: 4px;">${typeText}</div>`;
             
@@ -1033,7 +1041,8 @@
         let labelHtml = `<div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
             <div class="question-number-label" style="margin-bottom: 0;">${questionLabel}</div>`;
         if (quizSettings.showAppearance && q.appearance) {
-            labelHtml += `<div class="appearance-label" style="background: rgba(245,158,11,0.1); border-radius: 8px; padding: 4px 12px; color: #d97706; font-weight: bold; font-size: 0.85rem; border: 1px solid rgba(245,158,11,0.3);">出題回数・頻度: ${q.appearance}</div>`;
+            const appStr = q.appearance.replace(/回/g, '');
+            labelHtml += `<div class="appearance-label" style="background: rgba(245,158,11,0.1); border-radius: 8px; padding: 4px 12px; color: #d97706; font-weight: bold; font-size: 0.85rem; border: 1px solid rgba(245,158,11,0.3);">出題${appStr}回</div>`;
         }
         labelHtml += `</div>`;
 
