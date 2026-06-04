@@ -1,4 +1,4 @@
-export const database3 = [
+const database3 = [
   {
     categoryId: "ikeiseibutsu3",
     categoryName: "医系生物　過去問3",
