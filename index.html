@@ -547,6 +547,11 @@
                         <div class="toggle-switch"></div>
                         <span class="ts-label">語群ランダム</span>
                     </div>
+                    <div class="settings-divider"></div>
+                    <div class="toggle-switch-wrap" id="toggle-show-appearance" onclick="toggleSetting('showAppearance')">
+                        <div class="toggle-switch"></div>
+                        <span class="ts-label">出題回数表示</span>
+                    </div>
                 </div>
 
                 <!-- 一括操作ボタン -->
@@ -556,6 +561,14 @@
                     <button class="btn btn-secondary" onclick="selectQuestionsByType(['single', 'multi', 'sequence', 'table-select'])">☑ 記号問題</button>
                     <button class="btn btn-secondary" onclick="selectQuestionsByType(['fill', 'drag-fill'])">☑ 短答・語群</button>
                     <button class="btn btn-secondary" onclick="selectQuestionsByType(['essay'])">☑ 論述問題</button>
+                </div>
+
+                <!-- 出題回数フィルター -->
+                <div class="problem-select-controls" style="align-items: center; justify-content: flex-start; background: #f8fafc; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border-base); gap: 8px;">
+                    <span style="font-size: 0.9rem; font-weight: bold; color: var(--text-main); white-space: nowrap;">出題回数・頻度:</span>
+                    <input type="number" id="appearance-filter-input" value="2" min="1" max="99" style="width: 60px; padding: 6px 8px; border-radius: 8px; border: 2px solid var(--border-base); font-weight: bold; color: var(--neon-blue); outline: none;" onfocus="this.style.borderColor='var(--neon-blue)'" onblur="this.style.borderColor='var(--border-base)'">
+                    <span style="font-size: 0.9rem; color: var(--text-main); font-weight: bold; white-space: nowrap;">回以上</span>
+                    <button class="btn btn-secondary" onclick="selectQuestionsByAppearance()" style="flex: 0 1 auto; padding: 8px 16px; margin-left: auto;">☑ 選択に追加</button>
                 </div>
 
                 <!-- フラットな問題グリッド -->
@@ -706,7 +719,7 @@
 
     const LS_KEY_SETTINGS = 'kakomon_quiz_settings';
     let selectedQuestionSet = new Set();
-    let quizSettings = { randomOrder: false, randomOptions: false, randomWords: false };
+    let quizSettings = { randomOrder: false, randomOptions: false, randomWords: false, showAppearance: true };
 
     function loadSettings() {
         try {
@@ -714,6 +727,7 @@
             if (typeof s.randomOrder   === 'boolean') quizSettings.randomOrder   = s.randomOrder;
             if (typeof s.randomOptions === 'boolean') quizSettings.randomOptions = s.randomOptions;
             if (typeof s.randomWords   === 'boolean') quizSettings.randomWords   = s.randomWords;
+            if (typeof s.showAppearance=== 'boolean') quizSettings.showAppearance= s.showAppearance;
         } catch {}
     }
     function saveSettings() {
@@ -725,9 +739,12 @@
         quizSettings[key] = !quizSettings[key];
         saveSettings();
         syncSettingUI();
+        if (currentSession && key === 'showAppearance') {
+            renderProblemContainer(); // refresh to show/hide appearance in the grid
+        }
     }
     function syncSettingUI() {
-        const map = { randomOrder: 'toggle-random-order', randomOptions: 'toggle-random-options', randomWords: 'toggle-random-words' };
+        const map = { randomOrder: 'toggle-random-order', randomOptions: 'toggle-random-options', randomWords: 'toggle-random-words', showAppearance: 'toggle-show-appearance' };
         Object.entries(map).forEach(([key, id]) => {
             const el = document.getElementById(id);
             if (el) el.classList.toggle('on', quizSettings[key]);
@@ -839,7 +856,11 @@
             else if (q.type === 'drag-fill') typeText = '語群選択';
             else if (q.type === 'essay') typeText = '論述';
             
-            let innerHtml = `<span>${titleText}</span><div class="problem-type-badge">${typeText}</div>`;
+            let innerHtml = `<span style="font-size: 0.95rem; line-height: 1.2;">${titleText}</span>`;
+            if (quizSettings.showAppearance && q.appearance) {
+                innerHtml += `<div class="appearance-badge" style="font-size: 0.7rem; color: #d97706; background: rgba(245, 158, 11, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px; font-weight: bold; border: 1px solid rgba(245, 158, 11, 0.3);">頻度: ${q.appearance}</div>`;
+            }
+            innerHtml += `<div class="problem-type-badge" style="margin-top: 4px;">${typeText}</div>`;
             
             btn.innerHTML = innerHtml;
 
@@ -881,6 +902,50 @@
         allQ.forEach((q, i) => {
             if (types.includes(q.type)) {
                 selectedQuestionSet.add(i);
+            }
+        });
+        renderProblemContainer();
+    }
+
+    function parseAppearanceCount(str) {
+        if (!str) return 0;
+        str = String(str);
+        
+        // パターン1: "3回", "計2回", "出題回数: 3回" などの「回」の直前の数字
+        const match = str.match(/(\d+)\s*回/);
+        if (match) return parseInt(match[1]);
+        
+        // パターン2: 数字のみの文字列 (例: "3")
+        if (/^\d+$/.test(str.trim())) return parseInt(str.trim());
+        
+        // パターン3: コンマや中点で区切られたリスト (例: "2020, 2021", "H29・R1")
+        const splitted = str.split(/[,、・]/).filter(s => s.trim() !== '');
+        if (splitted.length > 0 && !str.match(/^[a-zA-Z\s]+$/)) {
+            return splitted.length;
+        }
+        
+        // 上記以外で何か文字が設定されている場合は1回以上とみなす（安全側）
+        return 1;
+    }
+
+    function selectQuestionsByAppearance() {
+        const input = document.getElementById('appearance-filter-input');
+        if (!input || !input.value) return;
+        const minCount = parseInt(input.value);
+        if (isNaN(minCount) || minCount < 1) return;
+        
+        playSound('click');
+        const allQ = currentSession.questions;
+        let addedCount = 0;
+        allQ.forEach((q, i) => {
+            if (q.appearance) {
+                const count = parseAppearanceCount(q.appearance);
+                if (count >= minCount) {
+                    if (!selectedQuestionSet.has(i)) {
+                        selectedQuestionSet.add(i);
+                        addedCount++;
+                    }
+                }
             }
         });
         renderProblemContainer();
@@ -965,7 +1030,12 @@
         kbHint.innerHTML = '';
 
         const questionLabel = q.title || `第 ${playQueue[playQueuePos] + 1} 問`;
-        const labelHtml = `<div class="question-number-label">${questionLabel}</div>`;
+        let labelHtml = `<div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
+            <div class="question-number-label" style="margin-bottom: 0;">${questionLabel}</div>`;
+        if (quizSettings.showAppearance && q.appearance) {
+            labelHtml += `<div class="appearance-label" style="background: rgba(245,158,11,0.1); border-radius: 8px; padding: 4px 12px; color: #d97706; font-weight: bold; font-size: 0.85rem; border: 1px solid rgba(245,158,11,0.3);">出題回数・頻度: ${q.appearance}</div>`;
+        }
+        labelHtml += `</div>`;
 
         function handleTabKey(e) {
             if (e.key === 'Tab' || e.keyCode === 9) {
