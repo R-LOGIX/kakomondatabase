@@ -858,7 +858,7 @@
             if (q.type === 'single') typeText = '記号選択';
             else if (q.type === 'multi') typeText = '記号選択';
             else if (q.type === 'sequence') typeText = '記号選択';
-            else if (q.type === 'table-select') typeText = '記号選択';
+            else if (q.type === 'table-select') typeText = '表形式';
             else if (q.type === 'fill') typeText = '短答';
             else if (q.type === 'drag-fill') typeText = '語群選択';
             else if (q.type === 'essay') typeText = '論述';
@@ -1574,10 +1574,15 @@
                 if (optId === String(q.answer)) {
                     btn.style.borderColor = 'var(--neon-green)';
                     btn.style.background = 'rgba(16, 185, 129, 0.2)';
-                    btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓ 正解</span>';
+                    if (userSelectionSingle !== null && optId === String(userSelectionSingle)) {
+                        btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓ 正解 (あなたの解答)</span>';
+                    } else {
+                        btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓ 正解</span>';
+                    }
                 } else if (userSelectionSingle !== null && optId === String(userSelectionSingle) && !isCorrectGlobal) {
                     btn.style.borderColor = 'var(--neon-red)';
                     btn.style.background = 'rgba(239, 68, 68, 0.2)';
+                    btn.innerHTML += ' <span style="float:right; color:var(--neon-red);">✗ 不正解 (あなたの解答)</span>';
                 }
             });
         } else if (q.type === 'multi') {
@@ -1600,10 +1605,15 @@
                 if (aSet.includes(optId)) {
                     btn.style.borderColor = 'var(--neon-green)';
                     btn.style.background = 'rgba(16, 185, 129, 0.2)';
-                    btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓</span>';
+                    if (uSet.includes(optId)) {
+                        btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓ 正解 (選択済)</span>';
+                    } else {
+                        btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓ 正解 (未選択)</span>';
+                    }
                 } else if (uSet.includes(optId)) {
                     btn.style.borderColor = 'var(--neon-red)';
                     btn.style.background = 'rgba(239, 68, 68, 0.2)';
+                    btn.innerHTML += ' <span style="float:right; color:var(--neon-red);">✗ 不正解 (選択済)</span>';
                 }
             });
         } else if (q.type === 'sequence') {
@@ -1621,10 +1631,15 @@
                     if (optId === correctAns) {
                         btn.style.borderColor = 'var(--neon-green)';
                         btn.style.background = 'rgba(16, 185, 129, 0.2)';
-                        btn.innerHTML += ' <span style="color:var(--neon-green);">✓</span>';
+                        if (optId === userAns) {
+                            btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓ 正解 (選択済)</span>';
+                        } else {
+                            btn.innerHTML += ' <span style="float:right; color:var(--neon-green);">✓ 正解 (未選択)</span>';
+                        }
                     } else if (optId === userAns && userAns !== correctAns) {
                         btn.style.borderColor = 'var(--neon-red)';
                         btn.style.background = 'rgba(239, 68, 68, 0.2)';
+                        btn.innerHTML += ' <span style="float:right; color:var(--neon-red);">✗ 不正解 (選択済)</span>';
                     }
                 });
             });
