@@ -13,6 +13,33 @@
     <script src="database3.js"></script>
     
     <style>
+        .recitation-block {
+            padding: 8px 14px;
+            background: var(--surface-light);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .recitation-block:active {
+            transform: scale(0.95);
+        }
+        .recitation-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--neon-blue);
+            color: var(--text-light);
+            font-size: 0.95rem;
+            outline: none;
+            width: 100px;
+            text-align: center;
+        }
+        .recitation-input:focus {
+            border-bottom: 2px solid var(--neon-green);
+        }
         :root {
             --bg-base: #f1f5f9;
             --bg-surface: #ffffff;
@@ -555,21 +582,40 @@
                 </div>
 
                 <!-- 一括操作ボタン -->
-                <div class="problem-select-controls">
-                    <button class="btn btn-secondary" onclick="selectAllQuestions(true)">☑ 全選択</button>
-                    <button class="btn btn-secondary" onclick="selectAllQuestions(false)">☐ 全解除</button>
-                    <button class="btn btn-secondary" onclick="selectQuestionsByType(['single', 'multi', 'sequence', 'table-select'])">☑ 記号問題</button>
-                    <button class="btn btn-secondary" onclick="selectQuestionsByType(['fill', 'drag-fill'])">☑ 短答・語群</button>
-                    <button class="btn btn-secondary" onclick="selectQuestionsByType(['essay'])">☑ 論述問題</button>
-                </div>
-
-                <!-- 出題回数フィルター -->
-                <div id="appearance-filter-container" class="problem-select-controls" style="align-items: center; justify-content: flex-start; background: #f8fafc; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border-base); gap: 8px; display: none;">
-                    <span style="font-size: 0.9rem; font-weight: bold; color: var(--text-main); white-space: nowrap;">出題回数：</span>
-                    <input type="number" id="appearance-filter-input" value="2" min="1" max="99" style="width: 60px; padding: 6px 8px; border-radius: 8px; border: 2px solid var(--border-base); font-weight: bold; color: var(--neon-blue); outline: none;" onfocus="this.style.borderColor='var(--neon-blue)'" onblur="this.style.borderColor='var(--border-base)'">
-                    <span style="font-size: 0.9rem; color: var(--text-main); font-weight: bold; white-space: nowrap;">回以上</span>
-                    <button class="btn btn-secondary" onclick="selectQuestionsByAppearance()" style="flex: 0 1 auto; padding: 8px 16px; margin-left: auto;">☑ 選択に追加</button>
-                </div>
+                <div class="settings-panel" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                    <div style="font-weight: bold; color: var(--text-main); font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <span>🔍 問題を絞り込む</span>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="selectAllQuestions(true)">すべて選択</button>
+            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="selectAllQuestions(false)">すべて解除</button>
+        </div>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 12px; background: white; padding: 16px; border-radius: 12px; border: 1px solid var(--border-base);">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+           <span style="font-weight: bold; width: 80px; font-size: 0.95rem;">問題形式</span>
+           <button class="btn option-btn filter-toggle-btn selected" id="filter-type-symbol" onclick="this.classList.toggle('selected'); this.innerText = this.classList.contains('selected') ? this.innerText.replace('☐', '☑') : this.innerText.replace('☑', '☐');" style="padding: 8px 16px; font-size: 0.9rem; flex: 1; min-width: 100px;">☑ 記号選択</button>
+           <button class="btn option-btn filter-toggle-btn selected" id="filter-type-fill" onclick="this.classList.toggle('selected'); this.innerText = this.classList.contains('selected') ? this.innerText.replace('☐', '☑') : this.innerText.replace('☑', '☐');" style="padding: 8px 16px; font-size: 0.9rem; flex: 1; min-width: 100px;">☑ 短答・語群</button>
+           <button class="btn option-btn filter-toggle-btn selected" id="filter-type-essay" onclick="this.classList.toggle('selected'); this.innerText = this.classList.contains('selected') ? this.innerText.replace('☐', '☑') : this.innerText.replace('☑', '☐');" style="padding: 8px 16px; font-size: 0.9rem; flex: 1; min-width: 100px;">☑ 論述・計算</button>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <span style="font-weight: bold; width: 80px; font-size: 0.95rem;">出題回数</span>
+            <input type="number" id="appearance-filter-input" value="1" min="1" max="99" style="width: 70px; padding: 8px; border-radius: 8px; border: 2px solid var(--border-base); font-weight: bold; color: var(--neon-blue); outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--neon-blue)'" onblur="this.style.borderColor='var(--border-base)'">
+            <span style="font-weight: bold; font-size: 0.95rem;">回以上の問題</span>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
+             <button class="btn btn-secondary" onclick="applySelectionFilter('and')" style="flex: 1; padding: 12px; font-size: 0.95rem;">全条件を満たすものを選択</button>
+             <button class="btn btn-secondary" onclick="applySelectionFilter('or')" style="flex: 1; padding: 12px; font-size: 0.95rem;">1つでも条件を満たすものを選択</button>
+        </div>
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="selectIncorrectQuestions()" style="color:#d97706; border-color:rgba(245, 158, 11, 0.5);">前回不正解だった問題を選択</button>
+        <button class="btn btn-secondary" onclick="clearHistory()" style="color:#e11d48; border-color:rgba(225, 29, 72, 0.5);">回答履歴を削除</button>
+    </div>
+</div>
 
                 <!-- フラットな問題グリッド -->
                 <div id="problem-container"></div>
@@ -621,14 +667,16 @@
                         <p style="color: var(--text-muted); font-size: 0.95rem;">自己採点を行ってください</p>
                         <div class="grade-btn-group">
                             <button class="grade-btn g-correct" onclick="submitSelfGrade('correct', this)">〇 正解</button>
-                            <button class="grade-btn g-partial" onclick="submitSelfGrade('partial', this)">△ 部分点</button>
                             <button class="grade-btn g-incorrect" onclick="submitSelfGrade('incorrect', this)">× 不正解</button>
                         </div>
                     </div>
                 </div>
 
+
+
                 <div class="controls">
                     <button class="btn btn-secondary" onclick="returnToProblemSelect()">問題一覧</button>
+                    <button class="btn btn-secondary" id="prev-question-btn" onclick="goToPrevQuestion()" style="display:none;">前の問題へ</button>
                     <button class="btn btn-secondary" id="retry-question-btn" onclick="retryCurrentQuestion()" style="display:none;">もう1度解く</button>
                     <button class="btn btn-primary" id="action-btn" onclick="handleAction()">解答する</button>
                 </div>
@@ -715,11 +763,24 @@
     let userSelectionSequence = {};
     let selectedTapItem       = null;
 
-    const sessionResults = {};
+    let sessionResults = {};
+    const LS_KEY_HISTORY = 'kakomon_quiz_history';
 
     const LS_KEY_SETTINGS = 'kakomon_quiz_settings';
     let selectedQuestionSet = new Set();
     let quizSettings = { randomOrder: false, randomOptions: false, randomWords: false, showAppearance: true };
+
+    function loadHistory() {
+        try {
+            sessionResults = JSON.parse(localStorage.getItem(LS_KEY_HISTORY) || '{}');
+        } catch {
+            sessionResults = {};
+        }
+    }
+    
+    function saveHistory() {
+        localStorage.setItem(LS_KEY_HISTORY, JSON.stringify(sessionResults));
+    }
 
     function loadSettings() {
         try {
@@ -773,6 +834,7 @@
 
     function initApp() {
         loadSettings();
+        loadHistory();
         syncSettingUI();
         
         // お知らせの描画
@@ -858,7 +920,7 @@
             if (q.type === 'single') typeText = '記号選択';
             else if (q.type === 'multi') typeText = '記号選択';
             else if (q.type === 'sequence') typeText = '記号選択';
-            else if (q.type === 'table-select') typeText = '表形式';
+            else if (q.type === 'table-select') typeText = '記号選択(表)';
             else if (q.type === 'fill') typeText = '短答';
             else if (q.type === 'drag-fill') typeText = '語群選択';
             else if (q.type === 'essay') typeText = '論述';
@@ -870,6 +932,15 @@
             }
             innerHtml += `<div class="problem-type-badge" style="margin-top: 4px;">${typeText}</div>`;
             
+            const sessionRes = sessionResults[currentDbIndex] && sessionResults[currentDbIndex][idx];
+            if (sessionRes) {
+                if (sessionRes.mark === 'incorrect') {
+                    innerHtml += `<div style="position: absolute; top: 4px; right: 6px; color: var(--neon-red); font-size: 1.1rem; font-weight: bold; text-shadow: 0 0 4px rgba(225,29,72,0.4);">✘</div>`;
+                } else if (sessionRes.mark === 'correct') {
+                    innerHtml += `<div style="position: absolute; top: 4px; right: 6px; color: var(--neon-green); font-size: 1.1rem; font-weight: bold; text-shadow: 0 0 4px rgba(16,185,129,0.4);">✔</div>`;
+                }
+            }
+
             btn.innerHTML = innerHtml;
 
             btn.onclick = (e) => {
@@ -904,14 +975,44 @@
         renderProblemContainer();
     }
 
-    function selectQuestionsByType(types) {
+    function applySelectionFilter(mode) {
         playSound('click');
+        const input = document.getElementById('appearance-filter-input');
+        const minCount = (input && input.value) ? parseInt(input.value) : 1;
+        const validMinCount = (isNaN(minCount) || minCount < 1) ? 1 : minCount;
+        
+        const typeSymbol = document.getElementById('filter-type-symbol').classList.contains('selected');
+        const typeFill = document.getElementById('filter-type-fill').classList.contains('selected');
+        const typeEssay = document.getElementById('filter-type-essay').classList.contains('selected');
+        
+        const targetTypes = [];
+        if (typeSymbol) targetTypes.push('single', 'multi', 'sequence', 'table-select');
+        if (typeFill) targetTypes.push('fill', 'drag-fill');
+        if (typeEssay) targetTypes.push('essay', 'calc');
+
         const allQ = currentSession.questions;
+        const matchedIndices = new Set();
+        
         allQ.forEach((q, i) => {
-            if (types.includes(q.type)) {
-                selectedQuestionSet.add(i);
+            let matchType = targetTypes.includes(q.type);
+            
+            let matchApp = false;
+            let currentCount = 0;
+            if (q.appearance) {
+                currentCount = parseAppearanceCount(q.appearance);
+            }
+            matchApp = (currentCount >= validMinCount);
+            
+            if (mode === 'and') {
+                if (matchType && matchApp) matchedIndices.add(i);
+            } else if (mode === 'or') {
+                if (matchType || matchApp) matchedIndices.add(i);
             }
         });
+
+        selectedQuestionSet.clear();
+        matchedIndices.forEach(i => selectedQuestionSet.add(i));
+        
         renderProblemContainer();
     }
 
@@ -936,27 +1037,34 @@
         return 1;
     }
 
-    function selectQuestionsByAppearance() {
-        const input = document.getElementById('appearance-filter-input');
-        if (!input || !input.value) return;
-        const minCount = parseInt(input.value);
-        if (isNaN(minCount) || minCount < 1) return;
-        
+    
+
+    function selectIncorrectQuestions() {
         playSound('click');
-        const allQ = currentSession.questions;
         let addedCount = 0;
-        allQ.forEach((q, i) => {
-            if (q.appearance) {
-                const count = parseAppearanceCount(q.appearance);
-                if (count >= minCount) {
-                    if (!selectedQuestionSet.has(i)) {
-                        selectedQuestionSet.add(i);
-                        addedCount++;
-                    }
+        const results = sessionResults[currentDbIndex];
+        if (results) {
+            Object.keys(results).forEach(idx => {
+                if (results[idx] && results[idx].mark === 'incorrect') {
+                    selectedQuestionSet.add(parseInt(idx));
+                    addedCount++;
                 }
-            }
-        });
-        renderProblemContainer();
+            });
+        }
+        if (addedCount === 0) {
+            alert('前回の不正解記録はありません。');
+        } else {
+            renderProblemContainer();
+        }
+    }
+
+    function clearHistory() {
+        playSound('click');
+        if (confirm('このデータベースの不正解記録をすべて削除しますか？')) {
+            sessionResults[currentDbIndex] = {};
+            saveHistory();
+            renderProblemContainer();
+        }
     }
 
     function updateSelCountBar() {
@@ -979,8 +1087,11 @@
         playQueue = queueIndices;
         playQueuePos = 0;
         queueIndices.forEach(idx => {
-            delete sessionResults[currentDbIndex][idx];
+            if (sessionResults[currentDbIndex]) {
+                delete sessionResults[currentDbIndex][idx];
+            }
         });
+        saveHistory();
         renderQuestion();
         switchView('view-quiz');
     }
@@ -1000,6 +1111,12 @@
         });
     }
 
+    
+    function cleanOptionText(text) {
+        if (!text) return text;
+        return text.replace(/^\s*(?:[\(（][A-Za-z0-9ア-ンあ-ん]{1,3}[\)）]|[A-Za-z0-9ア-ンあ-ん]{1,3}\.|[①-⑳])\s*/, '');
+    }
+
     function renderQuestion() {
         const qOrig = currentSession.questions[playQueue[playQueuePos]];
         const q = Object.assign({}, qOrig);
@@ -1010,6 +1127,12 @@
         userSelectionMulti = [];
         userSelectionSequence = {};
         selectedTapItem = null;
+
+        if (dragGhost) {
+            dragGhost.remove();
+            dragGhost = null;
+        }
+        document.querySelectorAll('body > .draggable-item').forEach(el => el.remove());
 
         const pct = Math.round((playQueuePos / playQueue.length) * 100);
         document.getElementById('progress-bar').style.width = pct + '%';
@@ -1029,9 +1152,14 @@
         wBank.innerHTML = '';
         wArea.style.display = 'none';
         eArea.style.display = 'none';
+        
+        const recArea = document.getElementById('recitation-area');
+        if(recArea) recArea.style.display = 'none';
+
         expPanel.style.display = 'none';
         document.getElementById('explanation-text').innerHTML = '';
         retryBtn.style.display = 'none';
+        document.getElementById('prev-question-btn').style.display = 'none';
         actionBtn.style.display = 'inline-block';
         actionBtn.innerText = '解答する';
         actionBtn.disabled = false;
@@ -1076,7 +1204,8 @@
                     let opts = q.optionsDist[p1];
                     if (quizSettings.randomOptions) opts = shuffleArray(opts);
                     opts.forEach(opt => {
-                        selectHtml += `<option value="${opt.replace(/"/g, '&quot;')}">${opt}</option>`;
+                        let cOpt = cleanOptionText(opt);
+                        selectHtml += `<option value="${opt.replace(/"/g, '&quot;')}">${cOpt}</option>`;
                     });
                 }
                 selectHtml += `</select>`;
@@ -1124,6 +1253,7 @@
                 div.addEventListener('touchstart', handleTouchStart, { passive: false });
                 div.addEventListener('touchmove',  handleTouchMove,  { passive: false });
                 div.addEventListener('touchend',   handleTouchEnd);
+                div.addEventListener('touchcancel', handleTouchEnd);
                 div.addEventListener('click', handleDraggableItemClick);
                 wBank.appendChild(div);
             });
@@ -1141,6 +1271,8 @@
         if (q.type === 'single') {
             const opts = quizSettings.randomOptions ? shuffleArray(q.options) : q.options;
             opts.forEach((opt, i) => {
+                const cleanText = cleanOptionText(opt.text);
+                opt = Object.assign({}, opt, { text: cleanText });
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerHTML = `<span class="shortcut-badge">${i + 1}</span>${opt.text}`;
@@ -1158,6 +1290,8 @@
         } else if (q.type === 'multi') {
             const opts = quizSettings.randomOptions ? shuffleArray(q.options) : q.options;
             opts.forEach((opt, i) => {
+                const cleanText = cleanOptionText(opt.text);
+                opt = Object.assign({}, opt, { text: cleanText });
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerHTML = `<span class="shortcut-badge">${i + 1}</span>${opt.text}`;
@@ -1180,11 +1314,13 @@
             q.parts.forEach((part, pIdx) => {
                 const row = document.createElement('div');
                 row.className = 'seq-row';
-                row.innerHTML = `<span class="seq-label">${part.label}</span>`;
+                row.innerHTML = `<span class="seq-label">${cleanOptionText(part.label)}</span>`;
                 const grp = document.createElement('div');
                 grp.className = 'seq-btn-group';
                 const partOpts = quizSettings.randomOptions ? shuffleArray(part.options) : part.options;
                 partOpts.forEach(opt => {
+                    const cleanText = cleanOptionText(opt.text);
+                    opt = Object.assign({}, opt, { text: cleanText });
                     const btn = document.createElement('button');
                     btn.className = 'option-btn';
                     btn.style.flex = '1'; btn.style.textAlign = 'center';
@@ -1365,11 +1501,17 @@
     }
 
     let dragGhost = null, activeDragEl = null, touchOffsetX = 0, touchOffsetY = 0;
+    let hasTouchMoved = false, touchStartX = 0, touchStartY = 0;
     function handleTouchStart(e) {
         if (isAnswerRevealed) return;
         activeDragEl = e.target;
         const touch = e.touches[0];
         const rect  = activeDragEl.getBoundingClientRect();
+        
+        hasTouchMoved = false;
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+
         dragGhost = activeDragEl.cloneNode(true);
         Object.assign(dragGhost.style, {
             position: 'fixed', left: rect.left + 'px', top: rect.top + 'px',
@@ -1385,8 +1527,16 @@
     }
     function handleTouchMove(e) {
         if (!dragGhost) return;
-        e.preventDefault();
         const touch = e.touches[0];
+
+        if (!hasTouchMoved) {
+            if (Math.abs(touch.clientX - touchStartX) > 5 || Math.abs(touch.clientY - touchStartY) > 5) {
+                hasTouchMoved = true;
+            }
+        }
+        if (!hasTouchMoved) return;
+
+        e.preventDefault();
         dragGhost.style.left = (touch.clientX - touchOffsetX) + 'px';
         dragGhost.style.top  = (touch.clientY - touchOffsetY)  + 'px';
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -1414,6 +1564,12 @@
         const touch = e.changedTouches[0];
         dragGhost.remove(); dragGhost = null;
         activeDragEl.style.opacity = '1';
+
+        if (!hasTouchMoved) {
+            activeDragEl = null;
+            return;
+        }
+
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
         document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
         if (target) {
@@ -1462,15 +1618,18 @@
         renderQuestion();
     }
 
+    function goToPrevQuestion() {
+        if (playQueuePos > 0) {
+            playSound('click');
+            playQueuePos--;
+            renderQuestion();
+        }
+    }
+
     function handleAction() {
         if (isWaitingForSelfGrade) {
-            // 自己採点を明示的に行わずに次へ進む場合はデフォルトで×扱いとする（または部分点など）
-            const qIdx = playQueue[playQueuePos];
-            if (!sessionResults[currentDbIndex][qIdx]) {
-                sessionResults[currentDbIndex][qIdx] = { mark: 'incorrect' };
-            }
-            isWaitingForSelfGrade = false;
-            isAnswerRevealed = true;
+            alert('自己採点（〇、×）のいずれかを選択してください。');
+            return;
         }
 
         playSound('click');
@@ -1521,8 +1680,11 @@
 
     function submitSelfGrade(mark, btn) {
         const qIdx = playQueue[playQueuePos];
+        const q = currentSession.questions[qIdx];
+        
         if (!sessionResults[currentDbIndex][qIdx]) {
             sessionResults[currentDbIndex][qIdx] = { mark };
+            saveHistory();
         }
         isWaitingForSelfGrade = false;
         isAnswerRevealed = true;
@@ -1533,8 +1695,10 @@
 
         const actionBtn = document.getElementById('action-btn');
         actionBtn.style.display = 'inline-block';
+        actionBtn.disabled = false;
         actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
         document.getElementById('retry-question-btn').style.display = 'inline-block';
+        document.getElementById('prev-question-btn').style.display = playQueuePos > 0 ? 'inline-block' : 'none';
         updateProgressBar();
         playSound(mark === 'correct' ? 'correct' : 'incorrect');
     }
@@ -1548,9 +1712,11 @@
             isWaitingForSelfGrade = true;
             actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
             actionBtn.style.display = 'inline-block';
+            actionBtn.disabled = true;
             document.getElementById('retry-question-btn').style.display = 'inline-block';
+            document.getElementById('prev-question-btn').style.display = playQueuePos > 0 ? 'inline-block' : 'none';
             const sample = q.sampleAnswer || q.answer || q.explanation || '解答例がありません。';
-            document.getElementById('essay-sample-text').innerHTML = String(sample).replace(/\n/g, '<br>');
+            document.getElementById('essay-sample-text').innerHTML = String(sample).replace(/\//g, '').replace(/\n/g, '<br>');
             document.getElementById('essay-sample-area').style.display = 'block';
             const ta = document.querySelector('.essay-textarea');
             if (ta) ta.readOnly = true;
@@ -1561,6 +1727,7 @@
         actionBtn.innerText = playQueuePos + 1 < playQueue.length ? '次の問題へ' : '完了する';
         actionBtn.style.display = 'inline-block';
         document.getElementById('retry-question-btn').style.display = 'inline-block';
+        document.getElementById('prev-question-btn').style.display = playQueuePos > 0 ? 'inline-block' : 'none';
         updateProgressBar();
 
         let isCorrectGlobal = true;
@@ -1745,6 +1912,7 @@
         const mark = isCorrectGlobal ? 'correct' : 'incorrect';
         if (!sessionResults[currentDbIndex][qIdx]) {
             sessionResults[currentDbIndex][qIdx] = { mark };
+            saveHistory();
         }
 
         playSound(isCorrectGlobal ? 'correct' : 'incorrect');
