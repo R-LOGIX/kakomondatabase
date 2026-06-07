@@ -92,7 +92,7 @@ const database3 = [
             'I': ['DNA', 'RNA', 'タンパク質']
         },
         answer: {
-            'A': 'RNA',
+            'A': 'タンパク質,
             'B': 'タンパク質',
             'C': 'タンパク質',
             'D': 'RNA',
