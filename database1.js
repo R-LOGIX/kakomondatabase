@@ -340,6 +340,22 @@ const database1 = [
             {
                 type: "essay", title: "問75", appearance: '1回', text: "コドンについて以下の問いに答えよ。\n1. 遺伝記号では3ヌクレオチド長のコドンが読まれる。1本の2本鎖DNA 上に読み枠として可能なものはいくつあるか。\n2. もし、遺伝暗号が4ヌクレオチド長のコドンで読まれるなら、同じ2本鎖DNA 断片の読み枠として可能なものはいくつあるか。",
                 sampleAnswer: "1. ６\n2. ４"
+            },
+            {
+                type: "single", title: "追加問題1", appearance: "0回", text: "反応 E + A ⇌ EA → E + P を触媒する酵素反応に 4 mMの基質を加える。初期反応速度はVmaxの25%である。この酵素のKmは？",
+                options: [{id:"A", text:"(A) 2 mM"}, {id:"B", text:"(B) 4 mM"}, {id:"C", text:"(C) 9 mM"}, {id:"D", text:"(D) 12 mM"}, {id:"E", text:"(E) 25 mM"}], answer: "D"
+            },
+            {
+                type: "single", title: "追加問題2", appearance: "0回", text: "肝グルコキナーゼはグルコースのグルコース6-リン酸へのリン酸化を触媒する。グルコースに対するKmはおよそ 7 mMである。血中グルコースは空腹時には 5 mM、高炭水化物食を摂ると肝臓では 20 mM まで増加する。そこで、もし空腹の人が高炭水化物食を摂れば、グルコキナーゼの反応速度はどうなるのか？",
+                options: [{id:"A", text:"(A) 50% Vmaxより低いままである。"}, {id:"B", text:"(B) 90% Vmaxより高いままである。"}, {id:"C", text:"(C) 50% Vmax以下より50% Vmax以上へ増加する。"}, {id:"D", text:"(D) 50% Vmax以上より50% Vmax以下へ減少する。"}], answer: "C"
+            },
+            {
+                type: "single", title: "追加問題3", appearance: "0回", text: "アルコールを摂取すると肝臓ではNADHが作られる。高NADHレベルの結果、ピルビン酸は何に変換されるか?",
+                options: [{id:"A", text:"(A) オキサロ酢酸"}, {id:"B", text:"(B) アセチルCoA"}, {id:"C", text:"(C) ホスホエノールピルビン酸"}, {id:"D", text:"(D) 乳酸"}], answer: "D"
+            },
+            {
+                type: "single", title: "追加問題4", appearance: "0回", text: "急性アルコール中毒は、深刻な低血糖をもたらし危険な状態に陥る。原因はある化合物からのグルコースの産生がエタノールの代謝産物により妨害されたためである。次のうちどれか?",
+                options: [{id:"A", text:"(A) グリコーゲン"}, {id:"B", text:"(B) 乳酸"}, {id:"C", text:"(C) グリセロール"}, {id:"D", text:"(D) アラニン"}, {id:"E", text:"(E) 乳酸、グリセロール、アラニン"}], answer: "E"
             }
         ]
     }
