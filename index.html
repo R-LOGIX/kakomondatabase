@@ -1436,20 +1436,15 @@
 
     function handleDropZoneClick(e, zone) {
         if (isAnswerRevealed) return;
-        if (!selectedTapItem) return;
-
+        
         if (zone.hasChildNodes()) {
             Array.from(zone.children).forEach(child => {
-                if (child.id) document.getElementById('word-bank').appendChild(child);
-                else child.remove();
+                if (child.id) {
+                    document.getElementById('word-bank').appendChild(child);
+                    syncSameIdDropZoneAfterDrop(zone);
+                }
             });
         }
-        zone.appendChild(selectedTapItem);
-        playSound('drop');
-        syncSameIdDropZoneAfterDrop(zone);
-
-        selectedTapItem.classList.remove('tap-selected');
-        selectedTapItem = null;
     }
 
     function handleDraggableItemClick(e) {
@@ -1457,32 +1452,18 @@
         e.stopPropagation();
 
         if (this.parentNode && this.parentNode.classList.contains('drop-zone')) {
-            if (selectedTapItem && selectedTapItem !== this) {
-                const zone = this.parentNode;
-                document.getElementById('word-bank').appendChild(this);
-                zone.appendChild(selectedTapItem);
-                playSound('drop');
-                syncSameIdDropZoneAfterDrop(zone);
-                selectedTapItem.classList.remove('tap-selected');
-                selectedTapItem = null;
-                return;
-            } else {
-                const zone = this.parentNode;
-                document.getElementById('word-bank').appendChild(this);
-                syncSameIdDropZoneAfterDrop(zone);
-                this.classList.remove('tap-selected');
-                if (selectedTapItem === this) selectedTapItem = null;
-                return;
-            }
+            const zone = this.parentNode;
+            document.getElementById('word-bank').appendChild(this);
+            syncSameIdDropZoneAfterDrop(zone);
+            return;
         }
 
-        if (selectedTapItem === this) {
-            this.classList.remove('tap-selected');
-            selectedTapItem = null;
-        } else {
-            if (selectedTapItem) selectedTapItem.classList.remove('tap-selected');
-            this.classList.add('tap-selected');
-            selectedTapItem = this;
+        const emptyZones = Array.from(document.querySelectorAll('.drop-zone')).filter(z => !z.querySelector('.draggable-item'));
+        if (emptyZones.length > 0) {
+            const zone = emptyZones[0];
+            zone.appendChild(this);
+            playSound('drop');
+            syncSameIdDropZoneAfterDrop(zone);
         }
     }
 
