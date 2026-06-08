@@ -5,10 +5,10 @@ const database3 = [
     description: "医系生物（関）2016-2024まとめ",
     questions: [
       {
-        type: "essay",
+        type: "fill",
         title: "問1",
         text: "医系生物の講義において説明した４つの生命の定義をそれぞれ解答欄に記入せよ。",
-        sampleAnswer: "外界との/境界を有する、/代謝を行う、/自己複製を/行う、/進化する",
+        Answer: "外界との境界を有する、代謝を行う、自己複製を行う、進化する",
         appearance: '2回'
       },
       {
